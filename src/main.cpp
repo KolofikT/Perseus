@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "robotka.h"
 
-void RamenoHomePos (){
+void fRamenoHomePos (){
     
     rkSmartServoMove(0, 130);
     rkSmartServoMove(1, 190);
@@ -9,7 +9,7 @@ void RamenoHomePos (){
 
 }
 
-void RamenoMaxCompose (){
+void fRamenoMaxCompose (){
     
     rkSmartServoMove(0, 130);
     rkSmartServoMove(1, 215);
@@ -17,7 +17,7 @@ void RamenoMaxCompose (){
 
 }
 
-void RamenoMaxDecompose (){
+void fRamenoMaxDecompose (){
     
     rkSmartServoMove(0, 130);
     rkSmartServoMove(1, 190);
@@ -46,7 +46,7 @@ void loop() {
     if (rkButtonIsPressed(BTN_DOWN))    { rkSmartServoMove(1, rkSmartServosPosicion(1) - 5 ); } 
     if (rkButtonIsPressed(BTN_LEFT))    { rkSmartServoMove(0, rkSmartServosPosicion(0) - 5 ); }
     if (rkButtonIsPressed(BTN_RIGHT))   { rkSmartServoMove(0, rkSmartServosPosicion(0) + 5 );}
-    if (rkButtonIsPressed(BTN_ON))      { RamenoHomePos(); }
+    if (rkButtonIsPressed(BTN_ON))      { fRamenoHomePos(); }
     
     
     //rkSmartServosPosicion(0);
