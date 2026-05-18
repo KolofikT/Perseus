@@ -25,6 +25,14 @@ void fRamenoMaxDecompose (){
 
 }
 
+void fRamenoOwn (){
+    
+    rkSmartServoMove(0, 135);
+    rkSmartServoMove(1, 187);
+    rkSmartServoMove(2, 76);
+
+}
+
 void setup() {
     rkConfig cfg;
     rkSetup(cfg);
@@ -47,7 +55,7 @@ void loop() {
     if (rkButtonIsPressed(BTN_LEFT))    { rkSmartServoMove(0, rkSmartServosPosicion(0) - 5 ); }
     if (rkButtonIsPressed(BTN_RIGHT))   { rkSmartServoMove(0, rkSmartServosPosicion(0) + 5 );}
     if (rkButtonIsPressed(BTN_ON))      { fRamenoHomePos(); }
-    
+    if (rkButtonIsPressed(BTN_OFF))     { fRamenoOwn(); }
     
     //rkSmartServosPosicion(0);
     //rkSmartServosPosicion(1);
