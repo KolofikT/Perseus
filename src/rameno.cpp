@@ -9,6 +9,17 @@ using namespace std;
 #define M_PI 3.14159265358979323846f
 #endif
 
+///////////////////////////////////////////////////////////////////////////////////////////
+
+//Smart servo 0 (Otaceni zakladny 1. manipulátoru)  - min  (right)  -        mid (front)    - 150°      max (left)  -     
+//Smart servo 1 (Pohyb 1. ramene 1. manipulátoru)   - min  (down)   - 140°                              max (up)    - 235°
+//Smart servo 2 (Pohyb 2. ramene 1. manipulátoru)   - min  (down)  -  0°                               max (up)  - 85°   
+//Smart servo 3 (Chytání grabberem 1. manipulátoru) - min  (right)  -        mid (front)    - 150°      max (left)  -    
+// Základní pozice 1. manipulátoru: Základna - 130° 1. Rameno -  198°  2. Rameno - 88°    Grabber - x°
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
 struct sKinematicResult {
     int iTheta1; 
     int iTheta2; 

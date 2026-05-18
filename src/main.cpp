@@ -1,101 +1,56 @@
 #include <Arduino.h>
 #include "robotka.h"
 
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+void RamenoHomePos (){
+    
+    rkSmartServoMove(0, 130);
+    rkSmartServoMove(1, 190);
+    rkSmartServoMove(2, 80);
 
+}
 
-// Nesmím předělávat --- já NZ
+void RamenoMaxCompose (){
+    
+    rkSmartServoMove(0, 130);
+    rkSmartServoMove(1, 215);
+    rkSmartServoMove(2, 80);
 
+}
 
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+void RamenoMaxDecompose (){
+    
+    rkSmartServoMove(0, 130);
+    rkSmartServoMove(1, 190);
+    rkSmartServoMove(2, 80);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-typedef struct __attribute__((packed)) {
-    uint8_t sensor_id;
-    uint16_t distance; // mm
-} SensorData;
-
-SensorData received_data;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
 
 void setup() {
     rkConfig cfg;
     rkSetup(cfg);
-    printf("Robotka prijimac UART started!\n");
+    printf("Robotka started!\n");
+    Serial.begin(115200);
     
-    // Inicializace UART komunikace
-    rkUartInit();
+    rkLedRed(true); // Turn on red LED
+    rkLedBlue(true); // Turn on blue LED
 
-    printf("Cekam na data ze senzoru...\n");
+
+    rkSmartServoInit(0, 0, 240, 500, 3);
+    rkSmartServoInit(1, 140, 235);
+    rkSmartServoInit(2, 0, 240);
+    
+    
 }
-
 void loop() {
-    // Zkusíme přijmout data
-    if (rkUartReceive(&received_data, sizeof(received_data))) {
-        // Pokud jsme úspěšně přijali data, vypíšeme je
-        printf("Senzor ID: %d, Vzdalenost: %d mm\n", received_data.sensor_id, received_data.distance);
-        if(received_data.sensor_id == 3){
-          printf("-------------------------------------------------------- \n");
-          std::cout<<" "<<std::endl;
-        }
-    }
-
-    // Malá pauza, abychom nezahltili procesor
-    delay(10); 
+    if (rkButtonIsPressed(BTN_UP)) {rkSmartServoMove(1, rkSmartServosPosicion(1) + 1); }
+    if (rkButtonIsPressed(BTN_DOWN)) { rkSmartServoMove(1, rkSmartServosPosicion(1) - 1 ); } 
+    if (rkButtonIsPressed(BTN_LEFT)) { rkSmartServoMove(1, rkSmartServosPosicion(2) - 1 ); }
+    if (rkButtonIsPressed(BTN_RIGHT)) { rkSmartServoMove(1, rkSmartServosPosicion(2) + 1 );}
+    if (rkButtonIsPressed(BTN_ON)) { RamenoHomePos(); }
+    
+    //rkSmartServosPosicion(0);
+    //rkSmartServosPosicion(1);
+    //rkSmartServosPosicion(2);
+    delay(10);
 }
 
