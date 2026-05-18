@@ -27,13 +27,15 @@ using namespace std;
 //////////////////////////////////////////////////////////////////////////////////////////
 
 struct sKinematicResult {
-    int iTheta1; 
-    int iTheta2; 
-    bool bIsValid;  
+    int iMathTheta1; 
+    int iMathTheta2; 
+    int iServo1;
+    int iServo2;
+    bool bIsValid; 
 };
 
 sKinematicResult CalculateAngles(int x, int y, int L1, int L2) {
-    sKinematicResult sResult = {0, 0, false};
+    sKinematicResult sResult = {0, 0, 0, 0, false};
 
     float rX = x;
     float rY = y; 
@@ -54,14 +56,22 @@ sKinematicResult CalculateAngles(int x, int y, int L1, int L2) {
     
     float rTheta1_rad = alpha + beta;
 
-    int deg1 = round(rTheta1_rad * (180.0f / M_PI));
-    int deg2 = round(rTheta2_rad * (180.0f / M_PI));
+    int iDeg1 = round(rTheta1_rad * (180.0f / M_PI));
+    int iDeg2 = round(rTheta2_rad * (180.0f / M_PI));
 
-    sResult.iTheta1 = deg1;
-    sResult.iTheta2 = deg2;
+    sResult.iMathTheta1 = iDeg1;
+    sResult.iMathTheta2 = iDeg2;
 
-    if (sResult.iTheta1 >= 0 && sResult.iTheta1 <= 95 &&
-        sResult.iTheta2 >= 0 && sResult.iTheta2 <= 85) {
+    
+    sResult.iServo1 = iDeg1 + 140;              // Servo 1: 140 je vodorovně, zvedá se nahoru
+                                                // Servo 2: 0 je vodorovně, roste směrem dolů.          
+    sResult.iServo2 = iDeg2 - iDeg1;            // Fyzický absolutní úhel spočítáme z rozdílu relativních úhlů ramen.
+
+    // Validace limitů serv
+        // Servo 1 může od 140 do 235
+        // Servo 2 může od 0 (vodorovně) do 85 (téměř kolmo dolů)
+    if (sResult.iServo1 >= 140 && sResult.iServo1 <= 235 &&
+        sResult.iServo2 >= 0 && sResult.iServo2 <= 85) {
         sResult.bIsValid = true;
     }
 
@@ -83,7 +93,7 @@ int main() {
     int iTool_Offset_Y = -45;       // Nástavec směřuje 45 mm dolů od zápěstí
 
     // Absolutní cíl (vztažen ke středu osy otáčení základny a k zemi)
-    int iTarget_Tip_Absolute_X = 220;
+    int iTarget_Tip_Absolute_X = 180;
     int iTarget_Tip_Absolute_Y = 60;  
 
     // --- PŘEPOČTY SOUŘADNIC ---
@@ -98,22 +108,24 @@ int main() {
     // Do funkce už jen čistoá vzdálenost, kterou musí ramena překonat
     sKinematicResult angles = CalculateAngles(iRelative_X, iRelative_Y, iL1, iL2);
 
-    // Vypíšeme si matematiku VŽDY, abychom věděli, co to vlastně spočítalo
-    cout << "--- MATEMATIKA ---\n";
-    cout << "Vypočítaný úhel ramene 1: " << angles.iTheta1 << "° (Limit: 0-95°)\n";
-    cout << "Vypočítaný úhel ramene 2: " << angles.iTheta2 << "° (Limit: 0-85°)\n\n";
+    //Vypsání cílových souřadnic
+    cout << "--- CÍLOVÉ SOUŘADNICE ZÁPĚSTÍ ---\n";
+    cout << "Relativní X: " << iRelative_X << ", Relativní Y: " << iRelative_Y << "\n\n";
 
     if (angles.bIsValid) {
         
-        //Přepočet na reálné hodnoty pro serva
-        int iServo1_Angle = angles.iTheta1 + 140;   //Servo 1 začíná fyzicky až na 140°
-        int iServo2_Angle = angles.iTheta2;         //  Servo 2 začíná na 0°, takže se rovná výpočtu  
+        cout << "--- MATEMATIKA ---\n";
+        cout << "Úhel ramene 1 (od 0): " << angles.iMathTheta1 << "°\n";
+        cout << "Úhel ramene 2 (vnitřní ohyb): " << angles.iMathTheta2 << "°\n\n";
+    
 
         cout << "--- HODNOTY PRO SERVA ---\n";
-        cout << "Smart servo 1: " << iServo1_Angle << "°\n";
-        cout << "Smart servo 2: " << iServo2_Angle << "°\n";
+        cout << "Smart servo 1: " << angles.iServo1 << "°\n";
+        cout << "Smart servo 2: " << angles.iServo2 << "°\n";
     } else {
-        cout << "Chyba: Mimo dosah nebo byl překročen limit úhlů (95° pro R1, 85° pro R2).\n";
+        cout << ">>> CHYBA: Bod je nedosažitelný nebo překračuje limity serv! <<<\n";
+        cout << "Spočítáno by bylo -> Servo 1: " << angles.iServo1 << "°, Servo 2: " << angles.iServo2 << "°\n";
+        cout << "Zkontroluj, zda by Servo 2 nemuselo jít pod 0° (zvednout se nad rovinu) nebo nad 85°.\n";
     }
 
     return 0;

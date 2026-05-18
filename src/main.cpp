@@ -28,8 +28,8 @@ void fRamenoMaxDecompose (){
 void fRamenoOwn (){
     
     rkSmartServoMove(0, 135);
-    rkSmartServoMove(1, 187);
-    rkSmartServoMove(2, 76);
+    rkSmartServoMove(1, 204);
+    rkSmartServoMove(2, 38);
 
 }
 
