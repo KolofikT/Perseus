@@ -42,11 +42,11 @@ void setup() {
     
 }
 void loop() {
-    if (rkButtonIsPressed(BTN_UP)) {rkSmartServoMove(1, rkSmartServosPosicion(1) + 1); }
-    if (rkButtonIsPressed(BTN_DOWN)) { rkSmartServoMove(1, rkSmartServosPosicion(1) - 1 ); } 
-    if (rkButtonIsPressed(BTN_LEFT)) { rkSmartServoMove(1, rkSmartServosPosicion(2) - 1 ); }
-    if (rkButtonIsPressed(BTN_RIGHT)) { rkSmartServoMove(1, rkSmartServosPosicion(2) + 1 );}
-    if (rkButtonIsPressed(BTN_ON)) { RamenoHomePos(); }
+    if (rkButtonIsPressed(BTN_UP))      { rkSmartServoMove(1, rkSmartServosPosicion(1) + 5); }
+    if (rkButtonIsPressed(BTN_DOWN))    { rkSmartServoMove(1, rkSmartServosPosicion(1) - 5 ); } 
+    if (rkButtonIsPressed(BTN_LEFT))    { rkSmartServoMove(2, rkSmartServosPosicion(2) - 5 ); }
+    if (rkButtonIsPressed(BTN_RIGHT))   { rkSmartServoMove(2, rkSmartServosPosicion(2) + 5 );}
+    if (rkButtonIsPressed(BTN_ON))      { RamenoHomePos(); }
     
     //rkSmartServosPosicion(0);
     //rkSmartServosPosicion(1);
