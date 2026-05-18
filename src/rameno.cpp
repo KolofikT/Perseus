@@ -11,11 +11,17 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-//Smart servo 0 (Otaceni zakladny 1. manipulátoru)  - min  (right)  -        mid (front)    - 150°      max (left)  -     
+//Smart servo 0 (Otaceni zakladny 1. manipulátoru)  - min  (right)  - 50°      mid (front)    - 135°      max (left)  - 225°    
 //Smart servo 1 (Pohyb 1. ramene 1. manipulátoru)   - min  (down)   - 140°                              max (up)    - 235°
 //Smart servo 2 (Pohyb 2. ramene 1. manipulátoru)   - min  (down)  -  0°                               max (up)  - 85°   
 //Smart servo 3 (Chytání grabberem 1. manipulátoru) - min  (right)  -        mid (front)    - 150°      max (left)  -    
-// Základní pozice 1. manipulátoru: Základna - 130° 1. Rameno -  198°  2. Rameno - 88°    Grabber - x°
+//Základní pozice 1. manipulátoru: Základna - 135° 1. Rameno -  200°  2. Rameno - 85°    Grabber - x°
+
+//Rozlozeni z = 0:      1. Rameno - 147°    2. Rameno - 14° 
+//Rozlozeni z = 55:     1. Rameno - 160°    2. Rameno - 5°
+
+//Slozeni z = 0:        1. Rameno - 200°    2. Rameno - 85°
+//Slozeni z = 38:       1. Rameno - 235°    2. Rameno - 55°
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
