@@ -299,6 +299,30 @@ void loop() {
 
 ---
 
+## 🧭 Mpu Gyroskop (MPU6050)
+
+Deska RBCX obsahuje integrovaný gyroskop a akcelerometr **MPU6050** připájený přímo na desce. Pokud senzor na vaší desce není osazen, všechny funkce budou vracet hodnotu `0.00`.
+
+Pro snadnou práci s gyroskopem jsou v knihovně Robotka připraveny následující funkce:
+
+### ⚙️ Inicializace a kalibrace
+- `rkMpuInit()` – Inicializuje senzor a provede automatickou kalibraci (odstranění klidového driftu gyroskopu).  
+  ⚠️ **DŮLEŽITÉ:** Během inicializace (která trvá cca 1,1 sekundy) **nesmí být robot v pohybu**, jinak se zkalibruje špatně a hodnoty budou samovolně ujíždět!
+
+### 📊 Čtení hodnot (úhlů)
+- `rkMpuGetAngleZ()` – Vrátí úhel natočení robota v **ose Z** (Yaw - rotace doleva/doprava) ve stupních.
+- `rkMpuGetAngleX()` – Vrátí úhel náklonu v **ose X** (Pitch - předklon/záklon) ve stupních.
+- `rkMpuGetAngleY()` – Vrátí úhel náklonu v **ose Y** (Roll - náklon do stran) ve stupních.
+
+### 🔄 Resetování úhlů (vynulování)
+- `rkMpuResetZ()` – Vynuluje úhel na ose Z. Ideální použít těsně před začátkem zatáčení, abyste mohli zatočit přesně o relativní úhel ze stávající pozice.
+- `rkMpuResetX()` – Vynuluje aktuální úhel na ose X (nastaví aktuální náklon jako nulový bod).
+- `rkMpuResetY()` – Vynuluje aktuální úhel na ose Y (nastaví aktuální náklon jako nulový bod).
+- `rkMpuResetAll()` – Vynuluje úhly na všech třech osách naráz.
+
+### 📸 Umístění senzoru na desce
+![Mpu Gyroskop](https://github.com/ZemanNz/OSEKANA_ROBOTKA_PROJEKT/blob/main/obrazky/mpu.png)
+
 ## Práce s chytrými servy
 
 !["obr.bur.konektor"](https://github.com/ZemanNz/OSEKANA_ROBOTKA_PROJEKT/blob/main/obrazky/konektor_ch.serv.jpg)
