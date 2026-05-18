@@ -93,8 +93,8 @@ int main() {
     int iTool_Offset_Y = -45;       // Nástavec směřuje 45 mm dolů od zápěstí
 
     // Absolutní cíl (vztažen ke středu osy otáčení základny a k zemi)
-    int iTarget_Tip_Absolute_X = 180;
-    int iTarget_Tip_Absolute_Y = 60;  
+    int iTarget_Tip_Absolute_X = 100;
+    int iTarget_Tip_Absolute_Y = 50;  
 
     // --- PŘEPOČTY SOUŘADNIC ---
     // 1. Wrist v absolutních souřadnicích
