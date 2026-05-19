@@ -1,7 +1,10 @@
-#include <iostream>
+#include <cstdio> // Nahrazeno místo iostream pro funkci printf
 #include <cmath>
 #include <algorithm>
 
+#include <Arduino.h>
+#include "robotka.h"
+#include "rameno.h"
 
 using namespace std;
 
@@ -23,15 +26,7 @@ using namespace std;
 //Slozeni z = 0:        1. Rameno - 200°    2. Rameno - 85°
 //Slozeni z = 38:       1. Rameno - 235°    2. Rameno - 55°
 
-
 //////////////////////////////////////////////////////////////////////////////////////////
-
-// ==============================================================================
-// TUTO FUNKCI SMAŽ, AŽ TO BUDEŠ NAHRÁVAT DO ROBOTA 
-void rkSmartServoMove(int cislo_serva, int uhel) {
-    cout << "  -> [HW] Fyzicky presouvam servo ID " << cislo_serva << " na uhel " << uhel << "°" << endl;
-}
-// ==============================================================================
 
 /*
   HLAVNÍ OVLÁDACÍ FUNKCE MANIPULÁTORU
@@ -44,7 +39,7 @@ void MoveManipulator(int iManipulator_ID, int iTarget_Tip_Absolute_X, int iTarge
     
     // VALIDACE ZÁKLADNY
     if (iBase_Angle < -90 || iBase_Angle > 90) {
-        cout << "[CHYBA M" << iManipulator_ID << "] Úhel otáčení základny (" << iBase_Angle << "°) je mimo limit -90° až +90°!" << endl;
+        printf("[CHYBA M%d] Úhel otáčení základny (%d°) je mimo limit -90° až +90°!\n", iManipulator_ID, iBase_Angle);
         return;
     }
 
@@ -78,7 +73,7 @@ void MoveManipulator(int iManipulator_ID, int iTarget_Tip_Absolute_X, int iTarge
         iServo0_Base = 135 - iBase_Angle; // REVERZACE OTÁČENÍ (kvůli obrácené montáži)
         
     } else {
-        cout << "[CHYBA] Neznámé ID manipulátoru! Zadej 1 nebo 2." << endl;
+        printf("[CHYBA] Neznámé ID manipulátoru (%d)! Zadej 0 nebo 1.\n", iManipulator_ID);
         return;
     }
 
@@ -101,8 +96,7 @@ void MoveManipulator(int iManipulator_ID, int iTarget_Tip_Absolute_X, int iTarge
     float rDistance = sqrt(rDistance_squared);
 
     if (rDistance > (rL1 + rL2) || rDistance < abs(rL1 - rL2)) { 
-        cout << "[CHYBA M" << iManipulator_ID << "] Cílový bod (X:" << iTarget_Tip_Absolute_X << ", Y:" << iTarget_Tip_Absolute_Y 
-             << ") je absolutně mimo fyzický dosah ramen!" << endl;
+        printf("[CHYBA M%d] Cílový bod (X:%d, Y:%d) je absolutně mimo fyzický dosah ramen!\n", iManipulator_ID, iTarget_Tip_Absolute_X, iTarget_Tip_Absolute_Y);
         return; 
     }
 
@@ -126,8 +120,7 @@ void MoveManipulator(int iManipulator_ID, int iTarget_Tip_Absolute_X, int iTarge
     if (iServo1_Arm1 >= 140 && iServo1_Arm1 <= 235 &&
         iServo2_Arm2 >= 0 && iServo2_Arm2 <= 85) {
         
-        cout << "[OK M" << iManipulator_ID << "] Přesouvám robota na bod (X:" << iTarget_Tip_Absolute_X 
-             << ", Y:" << iTarget_Tip_Absolute_Y << ") s natočením " << iBase_Angle << "°..." << endl;
+        printf("[OK M%d] Přesouvám robota na bod (X:%d, Y:%d) s natočením %d°...\n", iManipulator_ID, iTarget_Tip_Absolute_X, iTarget_Tip_Absolute_Y, iBase_Angle);
         
         int iServo_ID_Offset = iManipulator_ID * 4; 
         
@@ -136,8 +129,7 @@ void MoveManipulator(int iManipulator_ID, int iTarget_Tip_Absolute_X, int iTarge
         rkSmartServoMove(2 + iServo_ID_Offset, iServo2_Arm2); 
         
     } else {
-        cout << "[CHYBA M" << iManipulator_ID << "] Bod (X:" << iTarget_Tip_Absolute_X << ", Y:" << iTarget_Tip_Absolute_Y 
-             << ") překračuje povolené limity serv! (R1: " << iServo1_Arm1 << "°, R2: " << iServo2_Arm2 << "°)" << endl;
+        printf("[CHYBA M%d] Bod (X:%d, Y:%d) překračuje povolené limity serv! (R1: %d°, R2: %d°)\n", iManipulator_ID, iTarget_Tip_Absolute_X, iTarget_Tip_Absolute_Y, iServo1_Arm1, iServo2_Arm2);
     }
 }
 
@@ -152,7 +144,7 @@ void MoveGrabber(int iManipulator_ID, int iPoloha_Grabberu) {
     
     // OVĚŘENÍ ID MANIPULÁTORU
     if (iManipulator_ID != 0 && iManipulator_ID != 1) {
-        cout << "[CHYBA] Neznámé ID manipulátoru!" << endl;
+        printf("[CHYBA] Neznámé ID manipulátoru (%d) pro grabber!\n", iManipulator_ID);
         return;
     }
 
@@ -162,19 +154,5 @@ void MoveGrabber(int iManipulator_ID, int iPoloha_Grabberu) {
     // POHYB GRABBEREM
     rkSmartServoMove(3 + iServo_ID_Offset, iPoloha_Grabberu);
     
-    cout << "[OK M" << iManipulator_ID << "] Chapadlo nastaveno na " << iPoloha_Grabberu << "°" << endl;
-}
-
-// ==============================================================================
-// ==============================================================================
-
-int main() {
-    // SCÉNÁŘ PRO MANIPULÁTOR 1
-    MoveGrabber(1, 100);                // 1. Otevři chapadlo
-    MoveManipulator(1, 180, 50, 0);     // 2. Dojeď pro předmět před sebe                       | Cíl: X=180, Y=50, Základna = 0° (vpřed)
-    MoveGrabber(1, 150);                // 3. Zavři chapadlo (chytni předmět)
-    MoveManipulator(1, 180, 150, -90);  // 4. Zvedni ho do výšky a otoč se s ním doprava        | Cíl: X=180, Y=50, Základna = -90° (vpravo)
-    MoveGrabber(1, 100);                // 5. Otevři chapadlo (pusť předmět)
-
-    return 0;
+    printf("[OK M%d] Chapadlo nastaveno na %d°\n", iManipulator_ID, iPoloha_Grabberu);
 }
