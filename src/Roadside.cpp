@@ -50,9 +50,14 @@ private:
     TeamColor MyColor;
 
 public:
+
+    // =============================================
+
+    // ---- NASTAVENÍ POZIC DOCŮ A BATERIÍ ZDE ----
+
     // Inicializace Docků na základě vylosovaného rozložení
-    void fSetupDocks(const std::vector<TeamColor>& vDrawnLayout, TeamColor chosenColor) {
-        MyColor = chosenColor;
+    void fSetupDocks(const std::vector<TeamColor>& vDrawnLayout, TeamColor ChosenColor) {
+        MyColor = ChosenColor;
         vDocks.clear(); // Pro jistotu vyčistíme předchozí data
 
         // Fyzické pozice 8 Docků na hřišti v mm
@@ -68,12 +73,12 @@ public:
             } else {
                 CurrentStatus = DockStatus::Enemy;
             }
-
-            vDocks.push_back({{rFixedXPositions[i], rFixedYPosition}, vDrawnLayout[i], CurrentStatus});
+            
+            vDocks.push_back({{rFixedXPositions[i], rFixedYPosition}, vDrawnLayout[i], CurrentStatus}); // Uložení pozice, barvy, statusu Docku
         }
     }
 
-    // 2. Inicializace všech 8 Baterií (2 řady, 4 sloupce)
+    // Inicializace všech 8 Baterií (2 řady, 4 sloupce)
     void fSetupBatteries() {
         vBatteries.clear();
         
@@ -92,55 +97,138 @@ public:
         }
     }
 
-    // 3. NOVÉ: Funkce najde index volné baterie na daných souřadnicích s tolerancí 10 mm
-    int fFindBatteryIndexByCoords(float targetX, float targetY) {
-        float tolerance = 10.0f; 
-        for (int i = 0; i < vBatteries.size(); ++i) {
-            // Hledáme jen ty Available a porovnáváme odchylku X a Y
-            if (vBatteries[i].Status == BatteryStatus::Available &&
-                std::abs(vBatteries[i].Pos.fX - targetX) < tolerance && 
-                std::abs(vBatteries[i].Pos.fY - targetY) < tolerance) {
-                return i;
-            }
-        }
-        return -1; // -1 znamená, že tam žádná volná baterie není
+    // ============================================================
+
+    // GETTERY (Získání konkrétní souřadnice X nebo Y Baterie / Docku podle indexu)
+
+    float rGetDockPosX(int index) {
+        if (index >= 0 && index < vDocks.size()) return vDocks[index].Pos.fX;
+        return -1.0f; // Návratová hodnota při chybě
     }
 
-    // 4. NOVÉ: Funkce, které jen předáš souřadnice a ona baterii rovnou "sebere"
-    void fTakeBatteryByCoords(float targetX, float targetY) {
-        int idx = fFindBatteryIndexByCoords(targetX, targetY);
+    float rGetDockPosY(int index) {
+        if (index >= 0 && index < vDocks.size()) return vDocks[index].Pos.fY;
+        return -1.0f;
+    }
+
+    float rGetBatteryPosX(int index) {
+        if (index >= 0 && index < vBatteries.size()) return vBatteries[index].Pos.fX;
+        return -1.0f;
+    }
+
+    float rGetBatteryPosY(int index) {
+        if (index >= 0 && index < vBatteries.size()) return vBatteries[index].Pos.fY;
+        return -1.0f;
+    }
+
+    // ============================================================
+    
+    // HLEDÁNÍ NEJBLIŽŠÍCH CÍLŮ POUZE V OSE X
+
+    // Najde index volné baterie, která je robotovi nejblíže v ose X
+    int fFindClosestBattery(float fRobotX) {
+        int iBestIndex = -1;
+        float rMinDistance = 999999.0f;
         
-        if (idx != -1) {
-            vBatteries[idx].Status = BatteryStatus::Taken;
-            std::cout << "Baterie na [" << targetX << ", " << targetY << "] uspesne sebrana! (Index v poli: " << idx << ")\n";
+        for (int i = 0; i < vBatteries.size(); ++i) {
+            if (vBatteries[i].Status == BatteryStatus::Available) {
+                float rDistX = std::abs(vBatteries[i].Pos.fX - fRobotX); // Počítá vzdálenost v ose x
+                if (rDistX < rMinDistance) {
+                    rMinDistance = rDistX;
+                    iBestIndex = i;
+                }
+            }
+        }
+        return iBestIndex;
+    }
+
+    // Najde index volného Docku (naše barva, stav Empty), který je v ose X nejblíže
+    int fFindClosestEmptyDock(float fRobotX) {
+        int iBestIndex = -1;
+        float rMinDistance = 999999.0f;
+        
+        for (int i = 0; i < vDocks.size(); ++i) {
+            if (vDocks[i].Status == DockStatus::Empty) {
+                
+                float rDistX = std::abs(vDocks[i].Pos.fX - fRobotX); // Počítáme vzdálenost v ose X
+                if (rDistX < rMinDistance) {
+                    rMinDistance = rDistX;
+                    iBestIndex = i;
+                }
+            }
+        }
+        return iBestIndex;
+    }
+
+    // ============================================================
+    // MANIPULACE
+    // ============================================================
+
+    /*
+    void fTakeBatteryByCoords(float fTargetX, float fTargetY) {
+        float fTolerance = 10.0f; 
+        int iIndex = -1;
+        
+        for (int i = 0; i < vBatteries.size(); ++i) {
+            if (vBatteries[i].Status == BatteryStatus::Available &&
+                std::abs(vBatteries[i].Pos.fX - fTargetX) < fTolerance && 
+                std::abs(vBatteries[i].Pos.fY - fTargetY) < fTolerance) {
+                iIndex = i;
+                break;
+            }
+        }
+
+        if (iIndex != -1) {
+            vBatteries[iIndex].Status = BatteryStatus::Taken;
+            std::cout << "Baterie na [" << fTargetX << ", " << fTargetY << "] uspesne sebrana! (Index v poli: " << iIndex << ")\n";
         } else {
-            std::cout << "Chyba: Na [" << targetX << ", " << targetY << "] zadna dostupna baterie neni.\n";
+            std::cout << "Chyba: Na [" << fTargetX << ", " << fTargetY << "] zadna dostupna baterie neni.\n";
         }
     }
+
+    void fFillDock(int iIndex) {
+        if (iIndex >= 0 && iIndex < vDocks.size() && vDocks[iIndex].Status == DockStatus::Empty) {
+            vDocks[iIndex].Status = DockStatus::Full;
+            std::cout << "Dock [" << iIndex << "] uspesne naplnen!\n";
+        }
+    } 
+    */
 };
+
 
 // ===================================================
 
 int main() {
-    GameManager game;
+    GameManager Game;
     
-    // Dejme tomu, že jsi vylosoval modrou barvu a rozložení aut je následující:
     std::vector<TeamColor> vMatchLayout = {
-        TeamColor::Red, TeamColor::Blue, TeamColor::Red, TeamColor::Red,     // Bližší polovina (1 modré)
-        TeamColor::Blue, TeamColor::Blue, TeamColor::Red, TeamColor::Blue    // Vzdálenější polovina (3 modré)
+        TeamColor::Red, TeamColor::Blue, TeamColor::Red, TeamColor::Red,     
+        TeamColor::Blue, TeamColor::Blue, TeamColor::Red, TeamColor::Blue    
     };
 
-    // 1. Inicializace hřiště
-    game.fSetupDocks(vMatchLayout, TeamColor::Blue);
-    game.fSetupBatteries();
+    Game.fSetupDocks(vMatchLayout, TeamColor::Blue);
+    Game.fSetupBatteries();
 
-    // 2. Robot získá své souřadnice z odometrie (např. dojede na druhou bližší baterii)
-    // a pošle příkaz k jejímu sebrání v paměti:
-    game.fTakeBatteryByCoords(1430.0f, 950.0f);
+    // -- SIMULACE --
+    float fCurrentRobotX = 1400.0f; // Robot stojí někde poblíž středu osy X
 
-    // 3. Test pojistky: Zkusíme sebrat tu stejnou baterii podruhé
-    // Nyní už by měla vypsat chybu, protože její stav je 'Taken'
-    game.fTakeBatteryByCoords(1430.0f, 950.0f);
+    // 1. Hledání nejbližší baterie jen podle X
+    int iClosestBatteryID = Game.fFindClosestBattery(fCurrentRobotX);
+    if (iClosestBatteryID != -1) {
+        float fBaterryPosX = Game.rGetBatteryPosX(iClosestBatteryID);
+        float fBaterryPosY = Game.rGetBatteryPosY(iClosestBatteryID);
+        std::cout << "Nejblizsi baterie (podle X) ma index: " << iClosestBatteryID << "\n";
+        std::cout << "Její souradnice jsou: X=" << fBaterryPosX << ", Y=" << fBaterryPosY << "\n";
+    }
+
+    // 2. Hledání nejbližšího Docku jen podle X
+    int fClosestDockID = Game.fFindClosestEmptyDock(fCurrentRobotX);
+    if (fClosestDockID != -1) {
+        float fDockPosX = Game.rGetDockPosX(fClosestDockID);
+        float fDockPosY = Game.rGetDockPosY(fClosestDockID);
+        std::cout << "\nNejblizsi volny Dock (podle X) ma index: " << fClosestDockID << "\n";
+        std::cout << "Jeho souradnice jsou: X=" << fDockPosX << ", Y=" << fDockPosY << "\n";
+    }
 
     return 0;
 }
