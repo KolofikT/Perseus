@@ -43,7 +43,7 @@ int Close_Grabber_TC    = 0;
   iTarget_Tip_Absolute_Y   : Cílová pozice Y (výška od země)
   iBase_Angle              : Úhel natočení základny (-90° vpravo, 0° vpřed, +90° vlevo)
 */
-void MoveManipulator(int iManipulator_ID, int iTarget_Tip_Absolute_X, int iTarget_Tip_Absolute_Y, int iBase_Angle) {
+void fMoveManipulator(int iManipulator_ID, int iTarget_Tip_Absolute_X, int iTarget_Tip_Absolute_Y, int iBase_Angle) {
     
     // VALIDACE ZÁKLADNY
     if (iBase_Angle < -90 || iBase_Angle > 90) {
@@ -148,7 +148,7 @@ void MoveManipulator(int iManipulator_ID, int iTarget_Tip_Absolute_X, int iTarge
   iManipulator_ID   : 0 nebo 1
   iPoloha_Grabberu  : Open_Graber_RA / Close_Grabber_RA / Grab_Battery / Drop_Battery / Open_Graber_TC / Close_Grabber_TC
 */
-void MoveGrabber(int iManipulator_ID, int iPoloha_Grabberu) {
+void fMoveGrabber(int iManipulator_ID, int iPoloha_Grabberu) {
     
     // OVĚŘENÍ ID MANIPULÁTORU
     if (iManipulator_ID != 0 && iManipulator_ID != 1) {

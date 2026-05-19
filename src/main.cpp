@@ -60,10 +60,10 @@ void loop() {
         //fRamenoOwn();
         // SCÉNÁŘ PRO MANIPULÁTOR 1 (Nyní má ID 0)
         //MoveGrabber(0, 100);                // 1. Otevři chapadlo
-        MoveManipulator(0, 180, 50, 0);     // 2. Dojeď pro předmět před sebe                       | Cíl: X=180, Y=50, Základna = 0° (vpřed)
+        fMoveManipulator(0, 180, 50, 0);     // 2. Dojeď pro předmět před sebe                       | Cíl: X=180, Y=50, Základna = 0° (vpřed)
         delay(10000);
         //MoveGrabber(0, 150);                // 3. Zavři chapadlo (chytni předmět)
-        MoveManipulator(0, 180, 150, -45);  // 4. Zvedni ho do výšky a otoč se s ním doprava        | Cíl: X=180, Y=50, Základna = -90° (vpravo)
+        fMoveManipulator(0, 180, 150, -45);  // 4. Zvedni ho do výšky a otoč se s ním doprava        | Cíl: X=180, Y=50, Základna = -90° (vpravo)
         //MoveGrabber(0, 100);                // 5. Otevři chapadlo (pusť předmět)
         delay(10000);
         printf("\n");

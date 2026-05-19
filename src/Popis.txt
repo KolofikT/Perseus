@@ -1,0 +1,8 @@
+fProm --> Funkce
+vProm --> vector
+
+rProm --> real (float)
+iProm --> int
+bProm --> bool
+
+
