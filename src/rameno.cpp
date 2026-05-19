@@ -89,11 +89,11 @@ int main() {
     int iShoulder_Offset_Y = 90;    // Rameno je 90 mm nad zemí
 
     // Posunutí toolu
-    int iTool_Offset_X = 35;        // Nástavec trčí 35 mm dopředu od zápěstí
-    int iTool_Offset_Y = -45;       // Nástavec směřuje 45 mm dolů od zápěstí
+    int iTool_Offset_X = 37;        // Nástavec trčí 37 mm dopředu od zápěstí
+    int iTool_Offset_Y = -41-13;    // Nástavec směřuje 41 mm dolů od zápěstí
 
     // Absolutní cíl (vztažen ke středu osy otáčení základny a k zemi)
-    int iTarget_Tip_Absolute_X = 100;
+    int iTarget_Tip_Absolute_X = 180;
     int iTarget_Tip_Absolute_Y = 50;  
 
     // --- PŘEPOČTY SOUŘADNIC ---
