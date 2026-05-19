@@ -12,6 +12,14 @@ using namespace std;
 #define M_PI 3.14159265358979323846f
 #endif
 
+int Open_Graber_RA      = 0;
+int Close_Grabber_RA    = 0;
+int Grab_Battery        = 0;
+int Drop_Battery        = 0;
+int Open_Graber_TC      = 0; 
+int Close_Grabber_TC    = 0;
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 //Smart servo 0 (Otaceni zakladny 1. manipulátoru)  - min  (right) - 45°   mid (front) - 135°   max (left)  - 225°      rozsah: 180°
@@ -138,7 +146,7 @@ void MoveManipulator(int iManipulator_ID, int iTarget_Tip_Absolute_X, int iTarge
 /*
   FUNKCE PRO OVLÁDÁNÍ CHAPADLA
   iManipulator_ID   : 0 nebo 1
-  iPoloha_Grabberu  : OPEN / CLOSE / ...
+  iPoloha_Grabberu  : Open_Graber_RA / Close_Grabber_RA / Grab_Battery / Drop_Battery / Open_Graber_TC / Close_Grabber_TC
 */
 void MoveGrabber(int iManipulator_ID, int iPoloha_Grabberu) {
     
@@ -148,11 +156,10 @@ void MoveGrabber(int iManipulator_ID, int iPoloha_Grabberu) {
         return;
     }
 
-    // POSUNUTÍ ID SERVA PODLE ID MANIPULÁTORU
-    int iServo_ID_Offset = iManipulator_ID * 4; 
+    // POHYB GRABBERU
+    if(iManipulator_ID == 0)        { rkSmartServoMove(3, iPoloha_Grabberu); }      // Chytání kostky RA/TC     //Pak předělat na rkSmartServoSoftMove
+    else if(iManipulator_ID == 1)   { rkServosSetPosition(0, iPoloha_Grabberu); }   // Chytání baterky
     
-    // POHYB GRABBEREM
-    rkSmartServoMove(3 + iServo_ID_Offset, iPoloha_Grabberu);
-    
+    // VÝPIS
     printf("[OK M%d] Chapadlo nastaveno na %d°\n", iManipulator_ID, iPoloha_Grabberu);
 }
