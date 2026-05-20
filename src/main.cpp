@@ -4,11 +4,11 @@
 
 void fRamenoHomePos (){
     
-    // rkSmartServoMove(0, 130);
-    // rkSmartServoMove(1, 205);
-    // rkSmartServoMove(2, 80);
+    rkSmartServoMove(0, 130);
+    rkSmartServoMove(1, 225);
+    rkSmartServoMove(2, 60);
 
-    fMoveManipulator(0, 100, 65, 0);
+    //fMoveManipulator(0, 130, 65, 0);
 
 }
 
@@ -46,24 +46,27 @@ void setup() {
     rkLedBlue(true); // Turn on blue LED
 
 
-    rkSmartServoInit(0, 0, 240, 500, 3);
+    // Nastavení Chytrých serv
+    rkSmartServoInit(0, 45, 2250, 500, 3);
     rkSmartServoInit(1, 140, 235);
-    rkSmartServoInit(2, 0, 240);
+    rkSmartServoInit(2, 0, 90);
     rkSmartServoInit(3, 0, 120);
     
     
 }
 void loop() {
-    if (rkButtonIsPressed(BTN_UP))      { rkSmartServoMove(1, rkSmartServosPosicion(1) + 5); }
-    if (rkButtonIsPressed(BTN_DOWN))    { rkSmartServoMove(1, rkSmartServosPosicion(1) - 5 ); } 
-    if (rkButtonIsPressed(BTN_LEFT))    { rkSmartServoMove(2, rkSmartServosPosicion(2) + 5); }
-    if (rkButtonIsPressed(BTN_RIGHT))   { rkSmartServoMove(2, rkSmartServosPosicion(2) - 5);}
+    if (rkButtonIsPressed(BTN_LEFT) && rkButtonIsPressed(BTN_RIGHT))    { fMoveGrabber(0, iOpen_Grabber_RA); }
+    if (rkButtonIsPressed(BTN_UP) && rkButtonIsPressed(BTN_DOWN))       { fMoveGrabber(0, iClose_Grabber_TC); }
+    // if (rkButtonIsPressed(BTN_UP))      { rkSmartServoMove(1, rkSmartServosPosicion(1) + 5); }
+    // if (rkButtonIsPressed(BTN_DOWN))    { rkSmartServoMove(1, rkSmartServosPosicion(1) - 5 ); } 
+    // if (rkButtonIsPressed(BTN_LEFT))    { rkSmartServoMove(2, rkSmartServosPosicion(2) + 5); }
+    // if (rkButtonIsPressed(BTN_RIGHT))   { rkSmartServoMove(2, rkSmartServosPosicion(2) - 5);}
     if (rkButtonIsPressed(BTN_ON))      { fRamenoHomePos(); }
     if (rkButtonIsPressed(BTN_OFF))     { 
         
         // SCÉNÁŘ PRO MANIPULÁTOR 1 (ID 0)
         
-        fMoveGrabber(0, iOpen_Graber_RA);       // 1. Otevři chapadlo
+        fMoveGrabber(0, iOpen_Grabber_RA);      // 1. Otevři chapadlo
         delay(1500);
         
         fMoveManipulator(0, 180, 65, 0);        // 2. Dojeď pro předmět před sebe                       | Cíl: X=180, Y=50, Základna = 0° (vpřed)
@@ -75,7 +78,7 @@ void loop() {
         fMoveManipulator(0, 180, 150, -45);     // 4. Zvedni ho do výšky a otoč se s ním doprava        | Cíl: X=180, Y=50, Základna = -90° (vpravo)
         delay(10000);
         
-        fMoveGrabber(0, iOpen_Graber_RA);       // 5. Otevři chapadlo (pusť předmět)
+        fMoveGrabber(0, iOpen_Grabber_RA);      // 5. Otevři chapadlo (pusť předmět)
         delay(1500);
 
         printf("\n");

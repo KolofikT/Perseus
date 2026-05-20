@@ -12,14 +12,6 @@ using namespace std;
 #define M_PI 3.14159265358979323846f
 #endif
 
-int iOpen_Graber_RA      = 120;
-int iClose_Grabber_RA    = 60;
-int iGrab_Battery        = 0;
-int iDrop_Battery        = 0;
-int iOpen_Graber_TC      = 60; 
-int iClose_Grabber_TC    = 10;
-
-
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 // ==================================================================
@@ -29,14 +21,14 @@ int iClose_Grabber_TC    = 10;
 // -- 1. Manipulator
 //Smart servo ID 0 (Otaceni zakladny)           - min  (right) -    45°   mid (front) - 135°    max (left)  -   225°      rozsah: 180°
 //Smart servo ID 1 (Pohyb 1. ramene)            - min  (down)  -    140°                        max (up)    -   235°      rozsah: 95°
-//Smart servo ID 2 (Pohyb 2. ramene)            - min  (down)  -    0°                          max (up)  -     85°       rozsah: 85°
-//Smart servo ID 3 (Chytání grabberem - Linear) - min  (close) -    0°                          max (open)  -             rozsah:
+//Smart servo ID 2 (Pohyb 2. ramene)            - min  (down)  -    0°                          max (up)    -   85°       rozsah: 85°
+//Smart servo ID 3 (Chytání grabberem - Linear) - min  (close) -    0°                          max (open)  -   120°      rozsah: 120°
 
 // -- 2. Manipulator
-//Smart servo ID 4 (Otaceni zakladny)           - min  (right) -    45°   mid (front) - 135°    max (left)  -   225°      rozsah: 180°
-//Smart servo ID 5 (Pohyb 1. ramene)            - min  (down)  -    140°                        max (up)    -   235°      rozsah: 95°
-//Smart servo ID 6 (Pohyb 2. ramene)            - min  (down)  -    0°                          max (up)  -     85°       rozsah: 85°
-//Stupid servo ID 0 (Chytání grabberem - Mag.)  - min  (close) -    0°                          max (open)  -   120°      rozsah:
+//Smart servo ID 4 (Otaceni zakladny)           - min  (right) -    -°   mid (front) - -°       max (left)  -   -°      rozsah: 180°
+//Smart servo ID 5 (Pohyb 1. ramene)            - min  (down)  -    -°                          max (up)    -   -°      rozsah: 95°
+//Smart servo ID 6 (Pohyb 2. ramene)            - min  (down)  -    -°                          max (up)    -   -°      rozsah: 85°
+//Stupid servo ID 0 (Chytání grabberem - Mag.)  - min  (close) -    -°                          max (open)  -   -°      rozsah: -°
 
 // ==================================================================
 
@@ -46,55 +38,62 @@ int iClose_Grabber_TC    = 10;
 
 // --- Pozice bez Robota
 
-// -- Tool
+// -- Grabbing tool
 // Nejblíž s Toolem:        1. Rameno - 225°    | 2. Rameno - 60°
-// Nejdál s Toolem:         1. Rameno -         | 2. Rameno - 
+// Nejdál s Toolem:         1. Rameno - 160°    | 2. Rameno - 10°
 
 // -- RA Kostka
 // Nejblíž s RA Kostkou:    1. Rameno - 235°    | 2. Rameno - 34°
-// Nejdál s RA Kostkou:     1. Rameno -         | 2. Rameno -
+// Nejdál s RA Kostkou:     1. Rameno - 170°    | 2. Rameno - 0°
 
 // -- RA Baterka
-// Nejblíž s RA Baterkou:   1. Rameno -         | 2. Rameno - 
-// Nejdál s RA Baterkou:    1. Rameno -         | 2. Rameno -
+// Nejblíž s RA Baterkou:   1. Rameno - -°      | 2. Rameno - -°
+// Nejdál s RA Baterkou:    1. Rameno - -°      | 2. Rameno - -°
 
 // -- TC Kostka
-// Nejblíž s TC Kostkou:    1. Rameno -         | 2. Rameno - 
-// Nejdál s TC Kostkou:     1. Rameno -         | 2. Rameno -
+// Nejblíž s TC Kostkou:    1. Rameno - 225°    | 2. Rameno - 50°
+// Nejdál s TC Kostkou:     1. Rameno - 150°    | 2. Rameno - 0°
 
-// -- HomePos:              1. Rameno -         | 2. Rameno -
+// -- HomePos:              1. Rameno - 255°    | 2. Rameno - 60°
 
 // ==================================================================
 
 // --- Pozice s Robotem
 
 // -- Tool
-// Nejblíž s Toolem:        1. Rameno - 225°    | 2. Rameno - 60°
-// Nejdál s Toolem:         1. Rameno -         | 2. Rameno - 
+// Nejblíž s Toolem:        1. Rameno - -°      | 2. Rameno - -°
+// Nejdál s Toolem:         1. Rameno - -°      | 2. Rameno -° 
 
 // -- RA Kostka
-// Nejblíž s RA Kostkou:    1. Rameno - 235°    | 2. Rameno - 34°
-// Nejdál s RA Kostkou:     1. Rameno -         | 2. Rameno -
+// Nejblíž s RA Kostkou:    1. Rameno - -°      | 2. Rameno - -°
+// Nejdál s RA Kostkou:     1. Rameno - -°      | 2. Rameno - -°
 
 // -- RA Baterka
-// Nejblíž s RA Baterkou:   1. Rameno -         | 2. Rameno - 
-// Nejdál s RA Baterkou:    1. Rameno -         | 2. Rameno -
+// Nejblíž s RA Baterkou:   1. Rameno - -°      | 2. Rameno - 
+// Nejdál s RA Baterkou:    1. Rameno - -°      | 2. Rameno - -°
 
 // -- TC Kostka
-// Nejblíž s TC Kostkou:    1. Rameno -         | 2. Rameno - 
-// Nejdál s TC Kostkou:     1. Rameno -         | 2. Rameno -
+// Nejblíž s TC Kostkou:    1. Rameno - -°      | 2. Rameno - -°
+// Nejdál s TC Kostkou:     1. Rameno - -°      | 2. Rameno - -°
 
-// -- HomePos:              1. Rameno -         | 2. Rameno -
+// -- HomePos:              1. Rameno - -°      | 2. Rameno - -°
 
 // ==================================================================
 
-//Rozlozeni z = 0:      1. Rameno - 147°    2. Rameno - 14° 
-//Rozlozeni z = 55:     1. Rameno - 160°    2. Rameno - 5°
-
-//Slozeni z = 0:        1. Rameno - 200°    2. Rameno - 85°
-//Slozeni z = 38:       1. Rameno - 235°    2. Rameno - 55°
-
 //////////////////////////////////////////////////////////////////////////////////////////
+
+// ==================================================================
+
+// ---- Proměnné pro Rameno
+
+int iOpen_Grabber_RA     = 120;
+int iClose_Grabber_RA    = 60;
+int iGrab_Battery        = 0;
+int iDrop_Battery        = 0;
+int iOpen_Grabber_TC     = 60; 
+int iClose_Grabber_TC    = 10;
+
+// ==================================================================
 
 /*
   HLAVNÍ OVLÁDACÍ FUNKCE MANIPULÁTORU
