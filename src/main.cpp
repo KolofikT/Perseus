@@ -1,44 +1,10 @@
 #include <Arduino.h>
 #include "robotka.h"
 
+// Include ovládacích souborů pro Persea
 #include "Manipulator.h"
 #include "Roadside.h"
 
-using namespace std;
-
-void fRamenoHomePos (){
-    
-    rkSmartServoMove(0, 130);
-    rkSmartServoMove(1, 225);
-    rkSmartServoMove(2, 60);
-
-    //fMoveManipulator(0, 130, 65, 0);
-
-}
-
-void fRamenoMaxCompose (){
-    
-    rkSmartServoMove(0, 130);
-    rkSmartServoMove(1, 215);
-    rkSmartServoMove(2, 80);
-
-}
-
-void fRamenoMaxDecompose (){
-    
-    rkSmartServoMove(0, 130);
-    rkSmartServoMove(1, 190);
-    rkSmartServoMove(2, 80);
-
-}
-
-void fRamenoOwn (){
-    
-    rkSmartServoMove(0, 135);
-    rkSmartServoMove(1, 203);
-    rkSmartServoMove(2, 37);
-
-}
 
 // Nastavení Roadsidu
 GameManager RoadsideGame;
@@ -52,6 +18,7 @@ enum class MenuState {
     TOYCLEANUP_WAIT_START,
     GAME_RUNNING
 };
+
 enum class Discipline { None, Roadside, ToyCleanUp };
 
 MenuState eCurrentState = MenuState::SELECT_DISCIPLINE;
@@ -226,13 +193,13 @@ void loop() {
                 
                 if (iClosestDockID != -1) {
                     float fX = RoadsideGame.rGetDockPosX(iClosestDockID);
-                    cout << "Jedu k Docku na X = " << fX << "\n";
+                    printf("Jedu k Docku na X = %.1f\n", fX);
                     while(true); // Zastavení programu pro demonstraci
                 }
             } 
             else if (eSelectedDiscipline == Discipline::ToyCleanUp) {
                 // Tady běží kód pro TOYCLEANUP
-                // cout << "Hraju ToyCleanUp...\n";
+                // printf("Hraju ToyCleanUp...\n");
             }
             break;
     }

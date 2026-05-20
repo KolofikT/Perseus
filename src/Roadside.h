@@ -1,10 +1,8 @@
 #pragma once // Zabrání vícenásobnému načtení souboru
 
-#include <iostream>
+#include <cstdio>
 #include <vector>
 #include <cmath> // Přidáno pro matematickou funkci abs
-
-using namespace std; 
 
 // Definice barev týmů
 enum class TeamColor {
@@ -49,8 +47,8 @@ struct Battery {
 
 class GameManager {
 private:
-    vector<Dock> vDocks;
-    vector<Battery> vBatteries;
+    std::vector<Dock> vDocks;
+    std::vector<Battery> vBatteries;
     TeamColor MyColor;
 
 public:
@@ -59,7 +57,7 @@ public:
     // ============================================================
     void fInitGame(int iButtonClicks, TeamColor ChosenColor) {
         // Všechny kombinace jsou bezpečně schované zde uvnitř
-        vector<vector<TeamColor>> vAllLayouts = {
+        std::vector<std::vector<TeamColor>> vAllLayouts = {
             // Kombinace 0: Naše auto (Blue) je 1. v pořadí zleva
             {TeamColor::Blue, TeamColor::Red, TeamColor::Red, TeamColor::Red,
              TeamColor::Blue, TeamColor::Blue, TeamColor::Blue, TeamColor::Red},
@@ -83,9 +81,9 @@ public:
         // Použití tlačítka ZPĚT (Navrácení záporné hodnoty [odčítáme: iButtonClicks])
         if (iSelectedLayoutIndex < 0) { iSelectedLayoutIndex += 4; }
 
-        cout << "--- INICIALIZACE HRY ---\n";
-        cout << "Pocet kliknuti: " << iButtonClicks << "\n";
-        cout << "Vybrany index kombinace: " << iSelectedLayoutIndex << "\n";
+        printf("--- INICIALIZACE HRY ---\n");
+        printf("Pocet kliknuti: %d\n", iButtonClicks);
+        printf("Vybrany index kombinace: %d\n", iSelectedLayoutIndex);
 
         // Vnitřní volání nastavovacích funkcí
         fSetupDocks(vAllLayouts[iSelectedLayoutIndex], ChosenColor);
@@ -96,7 +94,7 @@ public:
     // ---- NASTAVENÍ POZIC DOCŮ A BATERIÍ ZDE ----
 
     // Inicializace Docků na základě vylosovaného rozložení
-    void fSetupDocks(const vector<TeamColor>& vDrawnLayout, TeamColor ChosenColor) {
+    void fSetupDocks(const std::vector<TeamColor>& vDrawnLayout, TeamColor ChosenColor) {
         MyColor = ChosenColor;
         vDocks.clear(); // Pro jistotu vyčistíme předchozí data
 
@@ -172,7 +170,7 @@ public:
         
         for (int i = 0; i < vBatteries.size(); ++i) {
             if (vBatteries[i].Status == BatteryStatus::Available) {
-                float rDistX = abs(vBatteries[i].Pos.fX - fRobotX); // Počítá vzdálenost v ose x
+                float rDistX = std::abs(vBatteries[i].Pos.fX - fRobotX); // Počítá vzdálenost v ose x
                 if (rDistX < rMinDistance) {
                     rMinDistance = rDistX;
                     iBestIndex = i;
@@ -190,7 +188,7 @@ public:
         for (int i = 0; i < vDocks.size(); ++i) {
             if (vDocks[i].Status == DockStatus::Empty) {
                 
-                float rDistX = abs(vDocks[i].Pos.fX - fRobotX); // Počítáme vzdálenost v ose X
+                float rDistX = std::abs(vDocks[i].Pos.fX - fRobotX); // Počítáme vzdálenost v ose X
                 if (rDistX < rMinDistance) {
                     rMinDistance = rDistX;
                     iBestIndex = i;
@@ -211,8 +209,8 @@ public:
         
         for (int i = 0; i < vBatteries.size(); ++i) {
             if (vBatteries[i].Status == BatteryStatus::Available &&
-                abs(vBatteries[i].Pos.fX - fTargetX) < fTolerance && 
-                abs(vBatteries[i].Pos.fY - fTargetY) < fTolerance) {
+                std::abs(vBatteries[i].Pos.fX - fTargetX) < fTolerance && 
+                std::abs(vBatteries[i].Pos.fY - fTargetY) < fTolerance) {
                 iIndex = i;
                 break;
             }
@@ -220,16 +218,16 @@ public:
 
         if (iIndex != -1) {
             vBatteries[iIndex].Status = BatteryStatus::Taken;
-            cout << "Baterie na [" << fTargetX << ", " << fTargetY << "] uspesne sebrana! (Index v poli: " << iIndex << ")\n";
+            printf("Baterie na [%.1f, %.1f] uspesne sebrana! (Index v poli: %d)\n", fTargetX, fTargetY, iIndex);
         } else {
-            cout << "Chyba: Na [" << fTargetX << ", " << fTargetY << "] zadna dostupna baterie neni.\n";
+            printf("Chyba: Na [%.1f, %.1f] zadna dostupna baterie neni.\n", fTargetX, fTargetY);
         }
     }
 
     void fFillDock(int iIndex) {
         if (iIndex >= 0 && iIndex < vDocks.size() && vDocks[iIndex].Status == DockStatus::Empty) {
             vDocks[iIndex].Status = DockStatus::Full;
-            cout << "Dock [" << iIndex << "] uspesne naplnen!\n";
+            printf("Dock [%d] uspesne naplnen!\n", iIndex);
         }
     } 
     */

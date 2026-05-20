@@ -18,6 +18,38 @@ const int iDrop_Battery        = 0;
 const int iOpen_Grabber_TC     = 60; 
 const int iClose_Grabber_TC    = 10;
 
+inline void fRamenoHomePos (){
+    
+    rkSmartServoMove(0, 130);
+    rkSmartServoMove(1, 225);
+    rkSmartServoMove(2, 60);
+
+}
+
+inline void fRamenoMaxCompose (){
+    
+    // rkSmartServoMove(0, 130);
+    // rkSmartServoMove(1, 215);
+    // rkSmartServoMove(2, 80);
+
+}
+
+inline void fRamenoMaxDecompose (){
+    
+    // rkSmartServoMove(0, 130);
+    // rkSmartServoMove(1, 190);
+    // rkSmartServoMove(2, 80);
+
+}
+
+inline void fRamenoOwn (){
+    
+    // rkSmartServoMove(0, 135);
+    // rkSmartServoMove(1, 203);
+    // rkSmartServoMove(2, 37);
+
+}
+
 /*
   HLAVNÍ OVLÁDACÍ FUNKCE MANIPULÁTORU
   iManipulator_ID          : 0 nebo 1 (určuje, který manipulátor se hýbe a jaké má rozměry nástroje)
