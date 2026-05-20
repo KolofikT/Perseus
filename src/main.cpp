@@ -54,18 +54,20 @@ void loop() {
         // ========================================================
         // MENU 0: Výběr soutěžní disciplíny
         // ========================================================
+
         case MenuState::SELECT_DISCIPLINE:
-            // Signalizace: Modrá pro Roadside, Zelená pro ToyCleanUp
+            
+            // Signalizace: Modrá pro Roadside, Zelená pro ToyCleanUp, Žlutá pro NIC
             rkLedAll(false);
             if (eSelectedDiscipline == Discipline::Roadside) rkLedBlue(true);
             else if (eSelectedDiscipline == Discipline::ToyCleanUp) rkLedGreen(true);
-            else rkLedYellow(true); // Žádný výběr
+            else rkLedYellow(true);
             
-            // Tlačítka vybírají, ukládají volbu (true = čeká se na puštění pro přesnost)
+            // Výběr a uložení volby pomocí BTN_1 a BTN_2
             if (rkButton1(true)) { eSelectedDiscipline = Discipline::Roadside; printf("Vybrano: Roadside\n"); }
             if (rkButton2(true)) { eSelectedDiscipline = Discipline::ToyCleanUp; printf("Vybrano: ToyCleanUp\n"); }
             
-            // Potvrzení výběru (přesun dál)
+            // Potvrzení výběru (přesun do dalšího MENU - dle soutěže)
             if (rkButtonOn(true)) {
                 if (eSelectedDiscipline == Discipline::Roadside) {
                     eCurrentState = MenuState::ROADSIDE_SELECT_TEAM;
@@ -82,6 +84,7 @@ void loop() {
         // ========================================================
         // ROADSIDE MENU 1: Výběr Týmu (Barvy)
         // ========================================================
+
         case MenuState::ROADSIDE_SELECT_TEAM:
             // Signalizace podle vybraného týmu
             rkLedAll(false);
@@ -106,6 +109,7 @@ void loop() {
         // ========================================================
         // ROADSIDE MENU 2: Výběr Rozložení Baterií
         // ========================================================
+
         case MenuState::ROADSIDE_SELECT_LAYOUT:
             // Signalizace rozložení (0-3) pomocí barev
             rkLedAll(false);
@@ -139,6 +143,7 @@ void loop() {
         // ========================================================
         // ROADSIDE MENU 3: START (ON)
         // ========================================================
+
         case MenuState::ROADSIDE_WAIT_START:
             // Blikání všech LED na znamení připravenosti ke startu
             rkLedAll(millis() % 500 < 250);
@@ -161,6 +166,7 @@ void loop() {
         // ========================================================
         // TOYCLEANUP MENU 1: START (ON)
         // ========================================================
+
         case MenuState::TOYCLEANUP_WAIT_START:
             // Blikání zelené - připravenost k TOYCLEANUP
             rkLedAll(false);
@@ -182,8 +188,9 @@ void loop() {
             break;
 
         // ========================================================
-        // STÁDIUM 2: HLAVNÍ JÍZDNÍ SMYČKA (Po odstartování)
+        // FÁZE 2: HLAVNÍ JÍZDNÍ SMYČKA (Po odstartování)
         // ========================================================
+
         case MenuState::GAME_RUNNING:
             
             if (eSelectedDiscipline == Discipline::Roadside) {
