@@ -77,7 +77,7 @@ struct rkConfig {
         , motor_max_acceleration(50000)
         , stupid_servo_min(-1.65f)
         , stupid_servo_max(1.65f)
-        , pocet_chytrych_serv(3)
+        , pocet_chytrych_serv(4)
         , enable_wifi_log(false)
         , enable_wifi_control_wasd(false)
         , enable_wifi_terminal(false)
