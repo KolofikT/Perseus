@@ -6,3 +6,14 @@ iProm --> int
 bProm --> bool
 
 
+Perseus:
+    MENU 0: Výběr soutěžní disciplíny                                   |Roadside (Button1) | ToyCleanUp (Button2)  |   ----> Výběr potvrdím ON
+
+Roadside:
+    ROADSIDE MENU 1: Výběr Týmu (Barvy)                                 |MODRÁ (Button1)    | ČERVENÁ (Button2)     |   ----> Výběr potvrdím ON
+    ROADSIDE MENU 2: Výběr Rozložení Baterií (Signalizace podle LED)    |NEXT (Button1)     | BACK (Button2)        |   ----> Výběr potvrdím ON
+    ROADSIDE MENU 3: START (ON)
+
+ToyCleanUp:
+    TOYCLEANUP MENU 1: START (ON)
+
