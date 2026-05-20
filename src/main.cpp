@@ -210,13 +210,11 @@ void loop() {
             }
             break;
     }
+// ======= TESTOVACÍ ČÁSTI ==========
 
+    
     if (rkButtonIsPressed(BTN_LEFT) && rkButtonIsPressed(BTN_RIGHT))    { fMoveGrabber(0, iOpen_Grabber_RA); }
     if (rkButtonIsPressed(BTN_UP) && rkButtonIsPressed(BTN_DOWN))       { fMoveGrabber(0, iClose_Grabber_TC); }
-    // if (rkButtonIsPressed(BTN_UP))      { rkSmartServoMove(1, rkSmartServosPosicion(1) + 5); }
-    // if (rkButtonIsPressed(BTN_DOWN))    { rkSmartServoMove(1, rkSmartServosPosicion(1) - 5 ); } 
-    // if (rkButtonIsPressed(BTN_LEFT))    { rkSmartServoMove(2, rkSmartServosPosicion(2) + 5); }
-    // if (rkButtonIsPressed(BTN_RIGHT))   { rkSmartServoMove(2, rkSmartServosPosicion(2) - 5);}
     if (rkButtonIsPressed(BTN_ON))      { fRamenoHomePos(); }
     if (rkButtonIsPressed(BTN_OFF))     { 
         
@@ -240,5 +238,12 @@ void loop() {
         printf("\n");
         
     }
+
+    // Ruční nastavování pozice Manipulátoru
+    // if (rkButtonIsPressed(BTN_UP))      { rkSmartServoMove(1, rkSmartServosPosicion(1) + 5); }
+    // if (rkButtonIsPressed(BTN_DOWN))    { rkSmartServoMove(1, rkSmartServosPosicion(1) - 5 ); } 
+    // if (rkButtonIsPressed(BTN_LEFT))    { rkSmartServoMove(2, rkSmartServosPosicion(2) + 5); }
+    // if (rkButtonIsPressed(BTN_RIGHT))   { rkSmartServoMove(2, rkSmartServosPosicion(2) - 5);}
+
     delay(10);
 }

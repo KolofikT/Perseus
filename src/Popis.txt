@@ -6,6 +6,9 @@ iProm --> int
 bProm --> bool
 
 
+-- Potvrzování (ON)
+-- Zrušení/MENU zpět (OFF)
+
 Perseus:
     MENU 0: Výběr soutěžní disciplíny                                   |Roadside (Button1) | ToyCleanUp (Button2)  |   ----> Výběr potvrdím ON
 
