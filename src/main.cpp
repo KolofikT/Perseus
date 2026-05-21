@@ -202,22 +202,30 @@ void loop() {
             
             if (eSelectedDiscipline == Discipline::Roadside) {
                 // Tady už běží samotná odometrie a logika soutěže ROADSIDE
-                int iClosestDockID = RoadsideGame.fFindClosestEmptyDock(rCurrentRobotX);
+                int iClosestBatteryID = RoadsideGame.fFindClosestBattery(rCurrentRobotX);
                 
-                if (iClosestDockID != -1) {
-                    float fX = RoadsideGame.rGetDockPosX(iClosestDockID);
-                    printf("Jedu k Docku na X = %.1f\n", fX);
+                if (iClosestBatteryID != -1) {
+                    float rX = RoadsideGame.rGetBatteryPosX(iClosestBatteryID);
+                    printf("Jedu k nejblizsi baterii na X = %.1f\n", rX);
                     
-                    float distance_to_go = fX - rCurrentRobotX;
+                    float rDistanceToGo = rX - rCurrentRobotX;
                     
-                    // Příklad zavolání funkce s využitím nové datové struktury MoveResult
-                    MoveResult result = move_acc_avoid(distance_to_go, 60, []() {
-                        return false; // Místo false zde zadej vlastní kontrolu překážky (např. ultrazvuk)
-                    }, 5000);
+                    // Jízda na místo (překážka se nedetekuje - vrací pevně false)
+                    MoveResult result = move_acc_avoid(rDistanceToGo, 60, []() { return false; }, 5000);
                     
-                    // Ať už dojel úspěšně nebo s přerušením, přičteme přesně tolik, kolik ujel!
+                    // Aktualizace přesné X-ové pozice na hřišti
                     rCurrentRobotX += result.traveled_mm; 
-                    printf("Nová pozice robota je X = %.1f\n", rCurrentRobotX);
+                    
+                    // Pohneme manipulátorem doleva (úhel 90), X = 150, Y = 80
+                    fMoveManipulator(0, 150, 80, 90);
+                    delay(2000); // Počkáme 2 sekundy, než tam rameno dojede
+                    
+                    // Uchopení baterie
+                    fMoveGrabber(0, iGrab_Battery);
+                    delay(1000); // Počkáme 1 sekundu na úplné sevření chapadla
+                    
+                    // Výpis výsledné pozice
+                    printf("Aktualni pozice robota v X je: %.1f\n", rCurrentRobotX);
                     
                     while(true) { delay(10); } // Zastavení programu pro demonstraci
                 }
