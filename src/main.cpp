@@ -1,5 +1,6 @@
-#include <Arduino.h>
 #include "robotka.h"
+#include <Arduino.h>
+#include <string>
 
 // Include ovládacích souborů pro Persea
 #include "Manipulator.h"
@@ -28,6 +29,9 @@ int iSelectedLayout = 0;
 bool bRoadsideGameStarted = false;
 
 void setup() {
+    printf("RB3204-RBCX s Robotkou\n");
+
+    // Inicializace knihovny Robotka
     rkConfig cfg;
     rkSetup(cfg);
 
