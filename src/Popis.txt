@@ -20,3 +20,6 @@ Roadside:
 ToyCleanUp:
     TOYCLEANUP MENU 1: START (ON)
 
+
+
+pak přejede na hodnotu v absolutbních souřadnicích (přečte si kde je a dojede zbytek s tím že bude detekovat jestli před ním není překážka stejně jako u baterek a docků) až dojede na pozici tak otočí manipulátorem 0 do leva (pokud je modrý tým) a do prava (pokud je červený tým), poté pohne manipulátorem nahoru a dopředu a poté pustí kostku pomocí movegrabbber na iOpen_Grabber_RA

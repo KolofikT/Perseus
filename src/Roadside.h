@@ -330,5 +330,85 @@ public:
     // NALOŽENÍ ZÁLOŽNÍHO NÁKLAĎÁKU KOSTKAMI
     // ============================================================
 
+    // Najde a sebere kostku pro náklaďák (RA). Během couvání hledá kostku laserem přes UART.
+    void fTakeCubeRA(float& rRobotX) {
+        printf("Najizdim manipulatorem na danou pozici pro hledani kostky...\n");
+        
+        // 1. Otevření chapadla a najetí do výchozí pozice nad zem
+        fMoveGrabber(0, iOpen_Grabber_RA);
+        delay(500);
+        fMoveManipulator(0, 150, 100, 0); 
+        delay(1500);
+        
+        printf("Couvam a hledam kostku pod laserem...\n");
+        
+        // 2. Couvání s detekcí (do detekce se UARTem přenese hodnota z laseru)
+        MoveResult sResult = move_acc_avoid(-1500.0f, 30, []() {
+            bool bKostkaDetekovana = false; // TODO: TADY PROPOJÍŠ ČTENÍ Z UART LASERU!
+            return bKostkaDetekovana; 
+        }, 0); 
+        
+        // Uložení ujeté vzdálenosti do X souřadnice (sResult.traveled_mm bude záporné)
+        rRobotX += sResult.traveled_mm;
+        
+        // Pokud se robot zastavil kvůli detekci (success == false)
+        if (!sResult.success) {
+            printf("Kostka detekovana na pozici X = %.1f! Chytám ji...\n", rRobotX);
+            
+            fMoveManipulator(0, 150, 60, 0); // 3. Sjede trochu níže
+            delay(1500);
+            
+            fMoveGrabber(0, iClose_Grabber_RA); // 4. Zavře chapadlo
+            delay(1000);
+            
+            fMoveManipulator(0, 150, 130, 0); // 5. Zvedne trochu manipulátor nahoru
+            delay(1500);
+            
+            printf("Kostka uspesne uchopena.\n");
+
+        } else { printf("Kostka nenalezena (Vsechny kostky nalozeny - Navrat).\n"); }
+    }
+
+    // Doveze kostku k náhradnímu náklaďáku a naloží ji
+    void fDropCubeRA(float& rRobotX, float rTargetTruckX) {
+        printf("Jedu k nakladaku na pozici X = %.1f...\n", rTargetTruckX);
+        
+        float rDistanceToGo = rTargetTruckX - rRobotX;
+        
+        // Jízda k náklaďáku s detekcí překážek
+        MoveResult result = move_acc_avoid(rDistanceToGo, 60, []() { return false; }, 10000);
+        
+        rRobotX += result.traveled_mm;
+        
+        if (result.success) {
+            // Modrý tým otáčí rameno doleva (90°), červený doprava (-90°)
+            int iBaseAngle = (MyColor == TeamColor::Blue) ? 90 : -90; 
+            
+            printf("Jsem u nakladaku. Nakladam kostku...\n");
+            
+            // Otočení manipulátoru na stranu podle barvy týmu a posun dopředu a nahoru
+            fMoveManipulator(0, 200, 130, iBaseAngle);
+            delay(2000);
+            
+            // Puštění kostky
+            fMoveGrabber(0, iOpen_Grabber_RA);
+            delay(1000);
+
+            // Nadzvednutí manipulátoru
+            fMoveManipulator(0, 200, 150, iBaseAngle);
+            delay(2000);
+
+            // Složení manipulátoru
+            fMoveManipulator(0, 100, 60, 0);
+            delay(2000);
+            
+            printf("Kostka uspesne nalozena.\n");
+        } else { printf("Nepodarilo se dojet k nakladaku kvuli souperovi! (X = %.1f)\n", rRobotX); }
+    }
+    
+    void fLoadCubes(){
+
+    }
+
 
 };
