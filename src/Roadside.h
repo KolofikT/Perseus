@@ -301,6 +301,21 @@ public:
         } else { printf("Zadny prazdny Dock neni k dispozici.\n"); }
     }
 
+    // Odtlačí náklaďák o zadanou vzdálenost v ose Y.
+    // Automaticky aktualizuje Y-ovou pozici robota.
+    void fPushTruckAway(float& rRobotY, float rDistanceY) {
+        printf("Zacinam odtlacovat nakladak o %.1f mm v ose Y.\n", rDistanceY);
+
+        // Jízda na danou vzdálenost s detekcí překážek (pomalá a silová)
+        MoveResult result = move_acc_avoid(rDistanceY, 40, []() { return false; }, 8000);
+
+        // Aktualizace přesné Y-ové pozice na hřišti
+        rRobotY += result.traveled_mm;
+
+        if (result.success) { printf("Nakladak uspesne odtlacen! Nova pozice robota v Y je: %.1f\n", rRobotY); }
+        else { printf("Odtlaceni se nezdarilo! Zastavil jsem na Y = %.1f\n", rRobotY); }
+    }
+
     // ============================================================
     // MANIPULACE
     // ============================================================
