@@ -696,19 +696,6 @@ Odteď budou tvé příkazy pro ukládání (`git push`) a stahování (`git pul
 ![" "](https://github.com/ZemanNz/OSEKANA_ROBOTKA_PROJEKT/blob/main/obrazky/SharedScreenshot.jpg)
 ---
 
-## ⚙️ Příkazy pro GitHub
-
-Zde je několik užitečných příkazů pro správu repozitáře GitHub:
-
-```bash
-git init                 # Inicializace nového git repozitáře
-git clone <url>          # Klonování existujícího repozitáře
-git add .                # Přidání změn ke commitnutí
-git commit -m "zpráva"  # Commit změn
-git push                 # Odeslání na vzdálený repozitář
-git pull                 # Stažení posledních změn z repozitáře
-```
-
 
 ## Autor: (NZ)
 
