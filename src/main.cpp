@@ -202,33 +202,11 @@ void loop() {
             
             if (eSelectedContest == Contest::Roadside) {
                 // Tady už běží samotná odometrie a logika soutěže ROADSIDE
-                int iClosestBatteryID = RoadsideGame.fFindClosestBattery(rCurrentRobotX);
                 
-                if (iClosestBatteryID != -1) {
-                    float rX = RoadsideGame.rGetBatteryPosX(iClosestBatteryID);
-                    printf("Jedu k nejblizsi baterii na X = %.1f\n", rX);
-                    
-                    float rDistanceToGo = rX - rCurrentRobotX;
-                    
-                    // Jízda na místo (překážka se nedetekuje - vrací pevně false)
-                    MoveResult result = move_acc_avoid(rDistanceToGo, 60, []() { return false; }, 5000);
-                    
-                    // Aktualizace přesné X-ové pozice na hřišti
-                    rCurrentRobotX += result.traveled_mm; 
-                    
-                    // Pohneme manipulátorem doleva (úhel 90), X = 150, Y = 80
-                    fMoveManipulator(0, 150, 80, 90);
-                    delay(2000); // Počkáme 2 sekundy, než tam rameno dojede
-                    
-                    // Uchopení baterie
-                    fMoveGrabber(0, iGrab_Battery);
-                    delay(1000); // Počkáme 1 sekundu na úplné sevření chapadla
-                    
-                    // Výpis výsledné pozice
-                    printf("Aktualni pozice robota v X je: %.1f\n", rCurrentRobotX);
-                    
-                    while(true) { delay(10); } // Zastavení programu pro demonstraci
-                }
+                // Zkusi sebrat baterii s vyhýbáním překážkám
+                RoadsideGame.fTakeClosestBattery(rCurrentRobotX);
+                
+                while(true) { delay(10); } // Zastavení programu pro demonstraci
             } 
             else if (eSelectedContest == Contest::ToyCleanUp) {
                 // Tady běží kód pro TOYCLEANUP

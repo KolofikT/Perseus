@@ -3,6 +3,8 @@
 #include <cstdio>
 #include <vector>
 #include <cmath> // Přidáno pro matematickou funkci abs
+#include "Movement.h"
+#include "Manipulator.h"
 
 // Definice barev týmů
 enum class TeamColor {
@@ -103,11 +105,8 @@ public:
         for (int i = 0; i < 8; ++i) {
             DockStatus CurrentStatus;
             
-            if (vDrawnLayout[i] == MyColor) {
-                CurrentStatus = DockStatus::Empty;
-            } else {
-                CurrentStatus = DockStatus::Enemy;
-            }
+            if (vDrawnLayout[i] == MyColor) { CurrentStatus = DockStatus::Empty; }
+            else { CurrentStatus = DockStatus::Enemy; }
             
             vDocks.push_back({{rFixedXPositions[i], rFixedYPosition}, vDrawnLayout[i], CurrentStatus}); 
         }
@@ -193,6 +192,113 @@ public:
             }
         }
         return iBestIndex;
+    }
+
+    // Označí konkrétní baterii jako sebranou
+    void fMarkBatteryTaken(int index) { if (index >= 0 && index < vBatteries.size()) { vBatteries[index].Status = BatteryStatus::Taken; } }
+
+    // Označí konkrétní Dock jako plný (úspěšně vložena baterie)
+    void fMarkDockFull(int index) { if (index >= 0 && index < vDocks.size()) { vDocks[index].Status = DockStatus::Full; } }
+
+    // ============================================================
+    // KOMPLEXNÍ AKCE (MISE)
+    // ============================================================
+
+    // Najde, dojede a sebere nejbližší baterii.
+    void fTakeClosestBattery(float& fRobotX) {
+
+        // Najití ID nejbližší baterie
+        int iClosestBatteryID = fFindClosestBattery(fRobotX);
+        
+        if (iClosestBatteryID != -1) {
+
+            // Získání pozice baterie
+            float rX = rGetBatteryPosX(iClosestBatteryID);
+            printf("Jedu k nejblizsi baterii na X = %.1f\n", rX);
+            
+            // Výpočet potřebné vzdálenosti na ujetí
+            float rDistanceToGo = rX - fRobotX;
+            
+            // Jízda na místo s neustálou detekcí překážek
+            MoveResult result = move_acc_avoid(rDistanceToGo, 60, []() { return false; }, 5000);
+            
+            // Aktualizace přesné X-ové pozice na hřišti (ať už dojel nebo ne)
+            fRobotX += result.traveled_mm; 
+            
+            // Robot úspěšně dojel až do cíle k baterii bez předčasného přerušení
+            if (result.success) {
+
+                int iBaseAngle = (MyColor == TeamColor::Blue) ? 90 : -90;
+                // Přesun manipulátoru nad baterii
+                fMoveManipulator(0, 150, 80, iBaseAngle);
+                delay(2000); 
+                
+                // Uchopení baterie
+                fMoveGrabber(0, iGrab_Battery);
+                delay(1000); 
+
+                // Presun manipulátorem na pozici vhodné k pohybu robotem
+                fMoveManipulator(0, 120, 90, 0);
+                delay(2000); 
+
+                // Zapsis baterie jako sebraná
+                fMarkBatteryTaken(iClosestBatteryID);
+                
+                printf("Baterie sebrana! Aktualni pozice robota v X je: %.1f\n", fRobotX);
+                
+            } else { printf("K baterii se nepodarilo dojet kvuli prekazce! Zastavil jsem na X = %.1f\n", fRobotX); }
+        
+        } else { printf("Zadna volna baterie k dispozici.\n"); }
+    }
+
+    // Najde, dojede a vyloží baterii do nejbližšího volného Docku. 
+    void fFillClosestDock(float& fRobotX) {
+
+        // Najití ID nejbližšího prázdného Docku
+        int iClosestDockID = fFindClosestEmptyDock(fRobotX);
+        
+        if (iClosestDockID != -1) {
+
+            // Získání pozice Docku
+            float rX = rGetDockPosX(iClosestDockID);
+            printf("Jedu k nejblizsimu prazdnemu Docku na X = %.1f\n", rX);
+            
+            // Výpočet potřebné vzdálenosti k ujetí
+            float rDistanceToGo = rX - fRobotX;
+            
+            // Jízda na místo s neustálou detekcí překážek
+            MoveResult result = move_acc_avoid(rDistanceToGo, 60, []() { return false; }, 5000);
+            
+            // Aktualizace přesné X-ové pozice na hřišti (ať už dojel nebo ne)
+            fRobotX += result.traveled_mm; 
+            
+            // Robot úspěšně dojel až do cíle k Docku bez předčasného přerušení
+            if (result.success) {
+
+                // Rozhodnutí na jakou stranu se bude Manipulátor otáčet dle barvy Týmu
+                int iBaseAngle = (MyColor == TeamColor::Blue) ? -90 : 90;
+                
+                // Pohyb Manipulátorem nad Dock
+                fMoveManipulator(0, 150, 80, iBaseAngle);
+                delay(2000);
+
+                // Puštění Baterie
+                fMoveGrabber(0, iDrop_Battery);
+                delay(1000);
+
+                // Vrácení Manipulátoru do HomePos
+                fMoveManipulator(0, 150, 80, 0);
+                delay(2000);
+
+                
+                // Zápis Docku jako plný, aby se k němu už příště nejezdilo
+                fMarkDockFull(iClosestDockID);
+                
+                printf("Baterie vlozena do Docku! Aktualni pozice robota v X je: %.1f\n", fRobotX);
+            
+            } else { printf("K Docku se nepodarilo dojet kvuli prekazce! Zastavil jsem na X = %.1f\n", fRobotX); }
+        
+        } else { printf("Zadny prazdny Dock neni k dispozici.\n"); }
     }
 
     // ============================================================
