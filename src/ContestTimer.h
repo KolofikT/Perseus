@@ -13,10 +13,7 @@ private:
     static void timerTask(void* parameter) {
         ContestTimer* Timer = static_cast<ContestTimer*>(parameter);
         while (true) {
-            if (Timer->bRunning) {
-                // Počítáme čas pomocí millis(), abychom zamezili zpožďování vlákna (driftu)
-                Timer->iElapsedSeconds = (millis() - Timer->startMillis) / 1000;
-            }
+            if (Timer->bRunning) { Timer->iElapsedSeconds = (millis() - Timer->startMillis) / 1000; }
             // Vlákno se uspí na 500 ms, aby nezabíralo výkon procesoru
             vTaskDelay(pdMS_TO_TICKS(500));
         }
