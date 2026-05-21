@@ -1374,4 +1374,3 @@ void rkMpuResetAll();
 /**@}*/
 
 #endif // _LIBRB_H
-

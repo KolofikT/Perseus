@@ -52,11 +52,8 @@ private:
     TeamColor MyColor;
 
 public:
-    // ============================================================
-    // HLAVNÍ SPOUŠTĚČ (Tuto funkci voláš z main.cpp)
-    // ============================================================
+
     void fInitGame(int iButtonClicks, TeamColor ChosenColor) {
-        // Všechny kombinace jsou bezpečně schované zde uvnitř
         std::vector<std::vector<TeamColor>> vAllLayouts = {
             // Kombinace 0: Naše auto (Blue) je 1. v pořadí zleva
             {TeamColor::Blue, TeamColor::Red, TeamColor::Red, TeamColor::Red,
