@@ -13,7 +13,7 @@ GameManager RoadsideGame;
 
 // --- Proměnné pro MENU ---
 enum class MenuState {
-    SELECT_DISCIPLINE,
+    SELECT_CONTEST,
     ROADSIDE_SELECT_TEAM,
     ROADSIDE_SELECT_LAYOUT,
     ROADSIDE_WAIT_START,
@@ -21,10 +21,10 @@ enum class MenuState {
     GAME_RUNNING
 };
 
-enum class Discipline { None, Roadside, ToyCleanUp };
+enum class Contest { None, Roadside, ToyCleanUp };
 
-MenuState eCurrentState = MenuState::SELECT_DISCIPLINE;
-Discipline eSelectedDiscipline = Discipline::None;
+MenuState eCurrentState = MenuState::SELECT_CONTEST;
+Contest eSelectedContest = Contest::None;
 TeamColor eSelectedTeam = TeamColor::Blue; // Výchozí tým
 int iSelectedLayout = 0; 
 bool bRoadsideGameStarted = false;
@@ -59,31 +59,31 @@ void loop() {
     switch (eCurrentState) {
         
         // ========================================================
-        // MENU 0: Výběr soutěžní disciplíny
+        // MENU 0: Výběr soutěže (Contest)
         // ========================================================
 
-        case MenuState::SELECT_DISCIPLINE:
+        case MenuState::SELECT_CONTEST:
             
             // Signalizace: Modrá pro Roadside, Zelená pro ToyCleanUp, Žlutá pro NIC
             rkLedAll(false);
-            if (eSelectedDiscipline == Discipline::Roadside) rkLedBlue(true);
-            else if (eSelectedDiscipline == Discipline::ToyCleanUp) rkLedGreen(true);
+            if (eSelectedContest == Contest::Roadside) rkLedBlue(true);
+            else if (eSelectedContest == Contest::ToyCleanUp) rkLedGreen(true);
             else rkLedYellow(true);
             
             // Výběr a uložení volby pomocí BTN_1 a BTN_2
-            if (rkButton1(true)) { eSelectedDiscipline = Discipline::Roadside; printf("Vybrano: Roadside\n"); }
-            if (rkButton2(true)) { eSelectedDiscipline = Discipline::ToyCleanUp; printf("Vybrano: ToyCleanUp\n"); }
+            if (rkButton1(true)) { eSelectedContest = Contest::Roadside; printf("Vybrano: Roadside\n"); }
+            if (rkButton2(true)) { eSelectedContest = Contest::ToyCleanUp; printf("Vybrano: ToyCleanUp\n"); }
             
-            // Potvrzení výběru (přesun do dalšího MENU - dle soutěže)
+            // Potvrzení výběru (přesun do dalšího MENU)
             if (rkButtonOn(true)) {
-                if (eSelectedDiscipline == Discipline::Roadside) {
+                if (eSelectedContest == Contest::Roadside) {
                     eCurrentState = MenuState::ROADSIDE_SELECT_TEAM;
                     printf("Presun do: ROADSIDE MENU 1 (Vyber tymu)\n");
-                } else if (eSelectedDiscipline == Discipline::ToyCleanUp) {
+                } else if (eSelectedContest == Contest::ToyCleanUp) {
                     eCurrentState = MenuState::TOYCLEANUP_WAIT_START;
                     printf("Presun do: TOYCLEANUP MENU 1 (Cekam na START)\n");
                 } else {
-                    printf("Nejprve vyber disciplinu pomoci Button1 nebo Button2!\n");
+                    printf("Nejprve vyber soutez pomoci Button1 nebo Button2!\n");
                 }
             }
             break;
@@ -108,8 +108,8 @@ void loop() {
             }
             // Návrat do predchozího MENU
             if (rkButtonOff(true)) {
-                eCurrentState = MenuState::SELECT_DISCIPLINE;
-                printf("Zpet na: Vyber discipliny\n");
+                eCurrentState = MenuState::SELECT_CONTEST;
+                printf("Zpet na: Vyber souteze (Contest)\n");
             }
             break;
 
@@ -189,8 +189,8 @@ void loop() {
             }
             // Návrat do predchozího MENU
             if (rkButtonOff(true)) {
-                eCurrentState = MenuState::SELECT_DISCIPLINE;
-                printf("Zpet na: Vyber discipliny\n");
+                eCurrentState = MenuState::SELECT_CONTEST;
+                printf("Zpet na: Vyber souteze (Contest)\n");
             }
             break;
 
@@ -200,7 +200,7 @@ void loop() {
 
         case MenuState::GAME_RUNNING:
             
-            if (eSelectedDiscipline == Discipline::Roadside) {
+            if (eSelectedContest == Contest::Roadside) {
                 // Tady už běží samotná odometrie a logika soutěže ROADSIDE
                 int iClosestBatteryID = RoadsideGame.fFindClosestBattery(rCurrentRobotX);
                 
@@ -230,7 +230,7 @@ void loop() {
                     while(true) { delay(10); } // Zastavení programu pro demonstraci
                 }
             } 
-            else if (eSelectedDiscipline == Discipline::ToyCleanUp) {
+            else if (eSelectedContest == Contest::ToyCleanUp) {
                 // Tady běží kód pro TOYCLEANUP
                 // printf("Hraju ToyCleanUp...\n");
             }
