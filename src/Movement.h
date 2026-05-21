@@ -5,6 +5,11 @@
 #include <cmath>
 #include "robotka.h"
 
+struct MoveResult {
+    bool success;
+    float traveled_mm; // Skutečně ujetá vzdálenost se znaménkem (+ vpřed, - vzad)
+};
+
 /**
  * \brief Plynulý pohyb s vyhýbáním se (robot nenarazí).
  * 
@@ -12,16 +17,14 @@
  * \param speed Rychlost v % (0-100).
  * \param is_obstacle Funkce/lambda, která vrátí true, pokud je detekována překážka.
  * \param wait_timeout_ms Jak dlouho (v ms) robot maximálně počká, než vyhodí chybu (výchozí 5s).
- * \return true pokud robot úspěšně dosáhl cíle, false pokud vypršel čas při čekání.
+ * \return MoveResult struktura s úspěšností (success) a skutečně ujetou vzdáleností (traveled_mm).
  */
-inline bool move_acc_avoid(float mm, float speed, std::function<bool()> is_obstacle, uint32_t wait_timeout_ms = 5000) {
-    if (mm == 0 || speed == 0) return true;
+inline MoveResult move_acc_avoid(float mm, float speed, std::function<bool()> is_obstacle, uint32_t wait_timeout_ms = 5000) {
+    if (mm == 0 || speed == 0) { return {true, 0.0f}; }
     
     // Podpora pro jízdu pozpátku
     bool reverse = (mm < 0);
-    if (reverse) {
-        mm = -mm; // Cílová vzdálenost bude vždy kladná (pro výpočet ušlé dráhy)
-    }
+    float target_mm = std::abs(mm); // Cílová vzdálenost bude vždy kladná (pro výpočet ušlé dráhy)
     
     // Normalizace rychlosti (aby znaménko rychlosti odpovídalo směru)
     float abs_target_speed = std::abs(speed);
@@ -33,7 +36,7 @@ inline bool move_acc_avoid(float mm, float speed, std::function<bool()> is_obsta
     delay(50); // Krátká pauza, aby se koprocesor stihl zresetovat
     
     float min_speed = 18.0f;
-    if (abs_target_speed < min_speed) abs_target_speed = min_speed;
+    if (abs_target_speed < min_speed) { abs_target_speed = min_speed; }
     
     float current_base_speed = min_speed * speed_sign;
     
@@ -52,7 +55,7 @@ inline bool move_acc_avoid(float mm, float speed, std::function<bool()> is_obsta
     
     // Výpočet hrubého timeoutu pro celou cestu
     float speed_mm_per_sec = abs_target_speed * 5.0f; // odhad 100% speed ~ 500 mm/s
-    float expected_time_ms = (mm / speed_mm_per_sec) * 1000.0f;
+    float expected_time_ms = (target_mm / speed_mm_per_sec) * 1000.0f;
     uint32_t general_timeout_ms = (uint32_t)(expected_time_ms * 2.0f + 3000.0f);
     
     // Pomocná funkce pro bezpečné ořezání hodnoty a převod do int8_t
@@ -62,19 +65,24 @@ inline bool move_acc_avoid(float mm, float speed, std::function<bool()> is_obsta
         return static_cast<int8_t>(s);
     };
 
+    float avg_pos = 0.0f;
+
     while (true) {
         float pos_l = rkMotorsGetPositionLeft();
         float pos_r = rkMotorsGetPositionRight();
         float abs_l = std::abs(pos_l);
         float abs_r = std::abs(pos_r);
-        float avg_pos = (abs_l + abs_r) / 2.0f;
+        avg_pos = (abs_l + abs_r) / 2.0f;
         
-        if (avg_pos >= mm) break; // Dojeli jsme do cíle
+        if (avg_pos >= target_mm) {
+            avg_pos = target_mm; // Oříznutí na cíl pro přesnost návratové hodnoty
+            break; // Dojeli jsme do cíle
+        }
         
         // Časový limit pro celou funkci (pokud se někde nezasekne natrvalo)
         if ((millis() - start_time > general_timeout_ms) && !waiting_for_obstacle) {
             rkMotorsSetSpeed(0, 0);
-            return false; 
+            return {false, reverse ? -avg_pos : avg_pos}; 
         }
         
         bool obstacle = is_obstacle();
@@ -95,7 +103,7 @@ inline bool move_acc_avoid(float mm, float speed, std::function<bool()> is_obsta
                 current_base_speed = 0;
                 if (millis() - avoid_wait_start > wait_timeout_ms) {
                     rkMotorsSetSpeed(0, 0);
-                    return false; // Překážka nezmizela v limitu
+                    return {false, reverse ? -avg_pos : avg_pos}; // Překážka nezmizela v limitu
                 }
             }
         } else {
@@ -106,7 +114,7 @@ inline bool move_acc_avoid(float mm, float speed, std::function<bool()> is_obsta
                 current_base_speed = min_speed * speed_sign; 
             }
             
-            float dist_remaining = mm - avg_pos;
+            float dist_remaining = target_mm - avg_pos;
             if (dist_remaining <= decel_distance_mm) {
                 // Fáze: Běžné plynulé zpomalování před cílem
                 float abs_curr = std::abs(current_base_speed);
@@ -144,5 +152,5 @@ inline bool move_acc_avoid(float mm, float speed, std::function<bool()> is_obsta
     }
     
     rkMotorsSetSpeed(0, 0);
-    return true;
+    return {true, reverse ? -avg_pos : avg_pos};
 }

@@ -5,6 +5,7 @@
 // Include ovládacích souborů pro Persea
 #include "Manipulator.h"
 #include "Roadside.h"
+#include "Movement.h"
 
 
 // Nastavení Roadsidu
@@ -27,6 +28,8 @@ Discipline eSelectedDiscipline = Discipline::None;
 TeamColor eSelectedTeam = TeamColor::Blue; // Výchozí tým
 int iSelectedLayout = 0; 
 bool bRoadsideGameStarted = false;
+
+float rCurrentRobotX = 1400.0f; // Globální proměnná pro uchovávání absolutní X pozice robota na hřišti
 
 void setup() {
     printf("RB3204-RBCX s Robotkou\n");
@@ -199,13 +202,24 @@ void loop() {
             
             if (eSelectedDiscipline == Discipline::Roadside) {
                 // Tady už běží samotná odometrie a logika soutěže ROADSIDE
-                float rCurrentRobotX = 1400.0f; 
                 int iClosestDockID = RoadsideGame.fFindClosestEmptyDock(rCurrentRobotX);
                 
                 if (iClosestDockID != -1) {
                     float fX = RoadsideGame.rGetDockPosX(iClosestDockID);
                     printf("Jedu k Docku na X = %.1f\n", fX);
-                    while(true); // Zastavení programu pro demonstraci
+                    
+                    float distance_to_go = fX - rCurrentRobotX;
+                    
+                    // Příklad zavolání funkce s využitím nové datové struktury MoveResult
+                    MoveResult result = move_acc_avoid(distance_to_go, 60, []() {
+                        return false; // Místo false zde zadej vlastní kontrolu překážky (např. ultrazvuk)
+                    }, 5000);
+                    
+                    // Ať už dojel úspěšně nebo s přerušením, přičteme přesně tolik, kolik ujel!
+                    rCurrentRobotX += result.traveled_mm; 
+                    printf("Nová pozice robota je X = %.1f\n", rCurrentRobotX);
+                    
+                    while(true) { delay(10); } // Zastavení programu pro demonstraci
                 }
             } 
             else if (eSelectedDiscipline == Discipline::ToyCleanUp) {
