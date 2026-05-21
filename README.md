@@ -696,6 +696,7 @@ Odteď budou tvé příkazy pro ukládání (`git push`) a stahování (`git pul
 ![" "](https://github.com/ZemanNz/OSEKANA_ROBOTKA_PROJEKT/blob/main/obrazky/SharedScreenshot.jpg)
 ---
 
+xx
 
 ## Autor: (NZ)
 
