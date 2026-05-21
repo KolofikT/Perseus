@@ -39,8 +39,6 @@ void Context::setup(const rkConfig& cfg) {
 
     auto man_flags = MAN_NONE;
     
-    // Zde jsme natvrdo vypnuli ESP Watchdog (pípání), jak sis přál
-    man_flags = ManagerInstallFlags(man_flags | MAN_DISABLE_ESP_WATCHDOG);
 
     if (!cfg.motor_enable_failsafe) {
         man_flags = ManagerInstallFlags(man_flags | MAN_DISABLE_MOTOR_FAILSAFE);
