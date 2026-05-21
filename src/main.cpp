@@ -6,10 +6,14 @@
 #include "Manipulator.h"
 #include "Roadside.h"
 #include "Movement.h"
+#include "ContestTimer.h"
 
 
 // Nastavení Roadsidu
 GameManager RoadsideGame;
+
+// Nastavení Časovače
+ContestTimer GameTimer; 
 
 // --- Proměnné pro MENU ---
 enum class MenuState {
@@ -29,7 +33,8 @@ TeamColor eSelectedTeam = TeamColor::Blue; // Výchozí tým
 int iSelectedLayout = 0; 
 bool bRoadsideGameStarted = false;
 
-float rCurrentRobotX = 1400.0f; // Globální proměnná pro uchovávání absolutní X pozice robota na hřišti
+float rCurrentRobotX = 1400.0f; 
+float rCurrentRobotY = 200.0f;  
 
 void setup() {
     printf("RB3204-RBCX s Robotkou\n");
@@ -161,6 +166,7 @@ void loop() {
                 RoadsideGame.fInitGame(iSelectedLayout, eSelectedTeam);
                 bRoadsideGameStarted = true;
                 eCurrentState = MenuState::GAME_RUNNING;
+                GameTimer.fStart(); // Spuštění vlákna pro odpočet času
                 printf("=== ROADSIDE ZAPAS ODSTARTOVAN! ===\n");
             }
             // Návrat do predchozího MENU
@@ -185,6 +191,7 @@ void loop() {
                 // Zde můžeš v budoucnu zavolat něco jako ToyCleanUpGame.fInitGame()
                 bRoadsideGameStarted = true; // Pokud to používáš jako globální flag jízdy
                 eCurrentState = MenuState::GAME_RUNNING;
+                GameTimer.fStart(); // Spuštění vlákna pro odpočet času
                 printf("=== TOYCLEANUP ZAPAS ODSTARTOVAN! ===\n");
             }
             // Návrat do predchozího MENU
@@ -201,14 +208,24 @@ void loop() {
         case MenuState::GAME_RUNNING:
             
             if (eSelectedContest == Contest::Roadside) {
+                // Zjistíme, jestli nám nedochází čas (limit 300s, tolerance např. 45s pro návrat)
+                if (GameTimer.bIsTimeRunningOut(300, 45)) {
+                    printf("[CAS!] Zbyva malo casu (ubehlo %d s)! Ukoncuji sber a vracim se na start...\n", GameTimer.iGetElapsedSeconds());
+                    // Následoval by kód pro odjezd domů
+                }
+
                 // Tady už běží samotná odometrie a logika soutěže ROADSIDE
                 
                 // Zkusi sebrat baterii s vyhýbáním překážkám
                 RoadsideGame.fTakeClosestBattery(rCurrentRobotX);
                 
-                while(true) { delay(10); } // Zastavení programu pro demonstraci
             } 
             else if (eSelectedContest == Contest::ToyCleanUp) {
+                // Zjistíme, jestli nám nedochází čas (limit 150s, tolerance např. 30s)
+                if (GameTimer.bIsTimeRunningOut(150, 30)) {
+                    printf("[CAS!] Zbyva malo casu (ubehlo %d s)! Ukoncuji sber a vracim se...\n", GameTimer.iGetElapsedSeconds());
+                    // Následoval by kód pro odjezd domů
+                }
                 // Tady běží kód pro TOYCLEANUP
                 // printf("Hraju ToyCleanUp...\n");
             }

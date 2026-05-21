@@ -200,8 +200,14 @@ public:
     // Označí konkrétní Dock jako plný (úspěšně vložena baterie)
     void fMarkDockFull(int index) { if (index >= 0 && index < vDocks.size()) { vDocks[index].Status = DockStatus::Full; } }
 
+    // Zkontroluje, jestli už jsou všechny naše Docky plné
+    bool bAreAllOurDocksFull() {
+        for (const auto& dock : vDocks) { if (dock.Status == DockStatus::Empty) { return false; } }
+        return true; // Žádný prázdný Dock už nezbývá
+    }
+
     // ============================================================
-    // KOMPLEXNÍ AKCE (MISE)
+    // DOPLŇOVÁNÍ DOCKŮ
     // ============================================================
 
     // Najde, dojede a sebere nejbližší baterii.
@@ -279,15 +285,15 @@ public:
                 int iBaseAngle = (MyColor == TeamColor::Blue) ? -90 : 90;
                 
                 // Pohyb Manipulátorem nad Dock
-                fMoveManipulator(0, 150, 80, iBaseAngle);
+                fMoveManipulator(1, 150, 80, iBaseAngle);
                 delay(2000);
 
                 // Puštění Baterie
-                fMoveGrabber(0, iDrop_Battery);
+                fMoveGrabber(1, iDrop_Battery);
                 delay(1000);
 
                 // Vrácení Manipulátoru do HomePos
-                fMoveManipulator(0, 150, 80, 0);
+                fMoveManipulator(1, 150, 80, 0);
                 delay(2000);
 
                 
@@ -300,6 +306,10 @@ public:
         
         } else { printf("Zadny prazdny Dock neni k dispozici.\n"); }
     }
+
+    // ============================================================
+    // ODTLÁČENÍ NÁKLAĎÁKU
+    // ============================================================
 
     // Odtlačí náklaďák o zadanou vzdálenost v ose Y.
     // Automaticky aktualizuje Y-ovou pozici robota.
@@ -317,36 +327,8 @@ public:
     }
 
     // ============================================================
-    // MANIPULACE
+    // NALOŽENÍ ZÁLOŽNÍHO NÁKLAĎÁKU KOSTKAMI
     // ============================================================
 
-    /*
-    void fTakeBatteryByCoords(float fTargetX, float fTargetY) {
-        float fTolerance = 10.0f; 
-        int iIndex = -1;
-        
-        for (int i = 0; i < vBatteries.size(); ++i) {
-            if (vBatteries[i].Status == BatteryStatus::Available &&
-                std::abs(vBatteries[i].Pos.fX - fTargetX) < fTolerance && 
-                std::abs(vBatteries[i].Pos.fY - fTargetY) < fTolerance) {
-                iIndex = i;
-                break;
-            }
-        }
 
-        if (iIndex != -1) {
-            vBatteries[iIndex].Status = BatteryStatus::Taken;
-            printf("Baterie na [%.1f, %.1f] uspesne sebrana! (Index v poli: %d)\n", fTargetX, fTargetY, iIndex);
-        } else {
-            printf("Chyba: Na [%.1f, %.1f] zadna dostupna baterie neni.\n", fTargetX, fTargetY);
-        }
-    }
-
-    void fFillDock(int iIndex) {
-        if (iIndex >= 0 && iIndex < vDocks.size() && vDocks[iIndex].Status == DockStatus::Empty) {
-            vDocks[iIndex].Status = DockStatus::Full;
-            printf("Dock [%d] uspesne naplnen!\n", iIndex);
-        }
-    } 
-    */
 };
