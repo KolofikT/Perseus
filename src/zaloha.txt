@@ -1,0 +1,60 @@
+#include <Arduino.h>
+#include <Wire.h>
+#include "robotka.h"
+#include <Adafruit_VL53L0X.h>
+#include <Adafruit_TCS34725.h>
+
+// Inicializace instancí senzoru
+Adafruit_VL53L0X laser;
+Adafruit_TCS34725 rgbSensor;
+
+uint32_t lastPrint = 0;
+
+void setup() {
+    Serial.begin(115200);
+    delay(1000);
+    
+    rkConfig cfg;
+    cfg.pocet_chytrych_serv = 4;
+    rkSetup(cfg);
+
+    // 1. Nastavení I2C sběrnice pro Barevný senzor
+    Wire.begin(14, 26, 400000);  // SDA = 14, SCL = 26
+    Wire.setTimeOut(1);
+    
+    // 2. Nastavení I2C sběrnice pro Laser
+    Wire1.begin(21, 22, 400000); // SDA = 21, SCL = 22
+    Wire1.setTimeOut(1);
+
+    Serial.println("Inicializace senzoru...");
+    
+    // Inicializace laseru na sběrnici Wire1. Místo 255 musíme zadat platný pin (např. 27),
+    // protože zápis na pin 255 způsobuje okamžitý pád (reset) ESP32!
+    rk_laser_init("laser", Wire1, laser, 27, 0x30);
+    
+    // Inicializace barevného senzoru na sběrnici Wire
+    rkColorSensorInit("color", Wire, rgbSensor);
+    
+    Serial.println("Hotovo, jdeme merit!");
+}
+
+void loop() {
+    if (millis() - lastPrint > 500) {
+        lastPrint = millis();
+        
+        // Měření vzdálenosti z laseru
+        int dist = rk_laser_measure("laser");
+        
+        // Měření barvy z RGB senzoru
+        float r, g, b;
+        bool color_ok = rkColorSensorGetRGB("color", &r, &g, &b);
+        
+        // Hezký výpis do terminálu
+        if (color_ok) {
+            Serial.printf("Laser: %4d mm | Barva RGB: (%3.0f, %3.0f, %3.0f)\n", dist, r, g, b);
+        } else {
+            Serial.printf("Laser: %4d mm | Barva RGB: Chyba cteni\n", dist);
+        }
+    }
+    delay(10);
+}

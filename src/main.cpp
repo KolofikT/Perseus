@@ -8,8 +8,7 @@
 #include <Adafruit_TCS34725.h>
 
 // Globální instance pro senzory a časovač výpisů
-Adafruit_VL53L0X laser1;
-Adafruit_VL53L0X laser2;
+Adafruit_VL53L0X laser;
 Adafruit_TCS34725 rgbSensor;
 uint32_t lastSensorPrint = 0;
 
@@ -26,7 +25,7 @@ GameManager RoadsideGame;
 // Nastavení Časovače
 ContestTimer GameTimer; 
 
-// --- Proměnné pro MENU ---
+// Proměnné pro MENU
 enum class MenuState {
     SELECT_CONTEST,
     ROADSIDE_SELECT_TEAM,
@@ -36,75 +35,81 @@ enum class MenuState {
     GAME_RUNNING
 };
 
+// Proměnné pro Soutěž
 enum class Contest { None, Roadside, ToyCleanUp };
 
+// Status startovního MENU
 MenuState eCurrentState = MenuState::SELECT_CONTEST;
 Contest eSelectedContest = Contest::None;
 TeamColor eSelectedTeam = TeamColor::Blue; // Výchozí tým
 int iSelectedLayout = 0; 
 bool bRoadsideGameStarted = false;
 
+// Místo Startu  robota
 float rCurrentRobotX = 1400.0f; 
 float rCurrentRobotY = 200.0f;  
 
 void setup() {
-    // 1. NEJDŘÍVE nastartovat Serial a počkat, aby se stihl připojit monitor
+    
+    // -- Start SerialMonitoru
     Serial.begin(115200);
     delay(1000); 
 
-    printf("\n=== START SETUP ===\n");
-
-    printf("1. Inicializace knihovny Robotka (Serva)...\n");
-    // Inicializace knihovny Robotka
+    // -- Konfugurace robotky
     rkConfig cfg;
-    cfg.pocet_chytrych_serv = 0;
-    // Pokud zrovna nemáš zapojená a napájená chytrá serva, odkomentuj řádek níže, 
-    // jinak se rkSetup sekne při jejich hledání a dál tě nepustí!
-    // cfg.pocet_chytrych_serv = 0; 
+    
+    cfg.pocet_chytrych_serv = 4;
+    delay(500);
+    
     rkSetup(cfg);
+    delay(200);
 
-    printf("Robotka started!\n");
+    printf("ROBOTKA INIT COMPLETE\n");
 
-    //rkCheckBattery(); 
+    // -- Inicializace I2C senzorů
+
+    // Barevný senzor
+    Wire.begin(14, 26, 400000);  // SDA = 14, SCL = 26
+    Wire.setTimeOut(1);
     
-    printf("2. Vypnuti LED na startu...\n");
-    rkLedAll(false); // Vypneme LED na startu, menu se o ně postará
+    // Laserový senzor
+    Wire1.begin(21, 22, 400000); // SDA = 21, SCL = 22
+    Wire1.setTimeOut(1);
 
-    printf("3. Inicializace I2C...\n");
-    // Inicializace I2C na zadaných pinech (SDA 21, SCL 22)
-    Wire.begin(21, 22);
-
-    printf("4. Nastaveni XSHUT pinu na LOW (vypnuti laseru)...\n");
-    // POZOR ZMĚNA: Laser 1 přesunut z GPIO 14 na GPIO 27!
-    // GPIO 14 je sdíleno s datovou linkou pro chytrá serva (iservo) a dochází ke konfliktu.
-    pinMode(27, OUTPUT);
-    pinMode(26, OUTPUT);
-    digitalWrite(27, LOW);
-    digitalWrite(26, LOW);
-    delay(20);
-
-    #ifdef USE_VL53L0X
-    printf("5. Inicializace Laser 1 (adresa 0x30)...\n");
-    // Postupně probudíme lasery a přesuneme je na nové adresy (0x30 a 0x31)
-    rk_laser_init("laser1", Wire, laser1, 27, 0x30); 
-    printf("6. Inicializace Laser 2 (adresa 0x31)...\n");
-    rk_laser_init("laser2", Wire, laser2, 26, 0x31);
-    #endif
+    printf("I2C INIT ....\n");
     
-    printf("7. Inicializace RGB senzoru...\n");
-    // RGB senzor se MUSÍ inicializovat až PO laserech, protože mu zůstává fixní adresa 0x29
-    rkColorSensorInit("rgb1", Wire, rgbSensor);
+    // Init Laserového senzoru
+    rk_laser_init("laser", Wire1, laser, 27, 0x30);
+    
+    // Init Barevného senzoru
+    rkColorSensorInit("color", Wire, rgbSensor);
+    
+    printf("I2C INIT COMPLETE.\n");
 
-    printf("8. Nastaveni chytrych serv...\n");
-    // Nastavení Chytrých serv
-    // POZOR: Tvůj log ukazuje chybu "Top limit out of range" a limit 2250°. Ujisti se, že zde máš opravdu 225.
+    // -- Inicializace Chytrých serv
+
+    printf("CHYTRA SERVA INIT ....\n");
+
+    // Manipulator ID 0:
     rkSmartServoInit(0, 45, 225, 500, 3); 
     rkSmartServoInit(1, 140, 235);
     rkSmartServoInit(2, 0, 90);
     rkSmartServoInit(3, 0, 120);
     
-    printf("=== SETUP DOKONCEN, PRECHAZIM DO LOOP ===\n");
+    // // Manipulator ID 1:
+    // rkSmartServoInit(4, 45, 225, 500, 3); 
+    // rkSmartServoInit(5, 140, 235);
+    // rkSmartServoInit(6, 0, 90);
+    
+    printf("CHYTRA SERVA INIT COMPLETE\n");
+
+    printf(" ---- SETUP COMPLETE ----\n");
+    printf("Waiting for start...\n");
+
+
     //rkWaitForStart(); 
+
+    printf(" ---- START ----\n");
 }
 void loop() {
 
@@ -280,11 +285,9 @@ void loop() {
     // }
 // ======= TESTOVACÍ ČÁSTI ==========
 
-    
-    if (rkButtonIsPressed(BTN_LEFT) && rkButtonIsPressed(BTN_RIGHT))    { fMoveGrabber(0, iOpen_Grabber_RA); }
-    if (rkButtonIsPressed(BTN_UP) && rkButtonIsPressed(BTN_DOWN))       { fMoveGrabber(0, iClose_Grabber_TC); }
-    if (rkButtonIsPressed(BTN_ON))      { rkSmartServoMove(3, 0); }
-    if (rkButtonIsPressed(BTN_OFF))     { rkSmartServoMove(3, 120); }
+
+    if (rkButtonIsPressed(BTN_LEFT))      { fMoveGrabber(0, iOpen_Grabber_RA); }
+    if (rkButtonIsPressed(BTN_RIGHT))     { fMoveGrabber(0, iClose_Grabber_RA); }
     // if (rkButtonIsPressed(BTN_OFF))     { 
         
     //     // SCÉNÁŘ PRO MANIPULÁTOR 1 (ID 0)
@@ -318,19 +321,16 @@ void loop() {
     if (millis() - lastSensorPrint > 500) {
         lastSensorPrint = millis();
         
-        int d1 = -1, d2 = -1;
-        #ifdef USE_VL53L0X
-        d1 = rk_laser_measure("laser1"); // Měření vzdálenosti z prvního laseru
-        d2 = rk_laser_measure("laser2"); // Měření vzdálenosti z druhého laseru
-        #endif
+        int dist = -1;
+        dist = rk_laser_measure("laser"); // Měření vzdálenosti z laseru
         
         float r, g, b;
-        bool rgb_ok = rkColorSensorGetRGB("rgb1", &r, &g, &b); // Přečtení barev
+        bool color_ok = rkColorSensorGetRGB("color", &r, &g, &b); // Přečtení barev
         
-        if (rgb_ok) {
-            printf("[Senzory] L1: %d mm | L2: %d mm | RGB: (%.0f, %.0f, %.0f)\n", d1, d2, r, g, b);
+        if (color_ok) {
+            printf("[Senzory] Laser: %4d mm | Barva RGB: (%3.0f, %3.0f, %3.0f)\n", dist, r, g, b);
         } else {
-            printf("[Senzory] L1: %d mm | L2: %d mm | RGB: Chyba cteni\n", d1, d2);
+            printf("[Senzory] Laser: %4d mm | Barva RGB: Chyba cteni\n", dist);
         }
     }
 
