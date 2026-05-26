@@ -288,28 +288,29 @@ void loop() {
 
     if (rkButtonIsPressed(BTN_LEFT))      { fMoveGrabber(0, iOpen_Grabber_RA); }
     if (rkButtonIsPressed(BTN_RIGHT))     { fMoveGrabber(0, iClose_Grabber_RA); }
-    // if (rkButtonIsPressed(BTN_OFF))     { 
+    if (rkButtonIsPressed(BTN_UP))        { fMoveManipulator(0, 180, 150, 0); }
+    if (rkButtonIsPressed(BTN_OFF))     { 
         
-    //     // SCÉNÁŘ PRO MANIPULÁTOR 1 (ID 0)
+        // SCÉNÁŘ PRO MANIPULÁTOR 1 (ID 0)
         
-    //     fMoveGrabber(0, iOpen_Grabber_RA);      // 1. Otevři chapadlo
-    //     delay(1500);
+        fMoveGrabber(0, iOpen_Grabber_RA);      // 1. Otevři chapadlo
+        delay(1500);
         
-    //     fMoveManipulator(0, 180, 65, 0);        // 2. Dojeď pro předmět před sebe                       | Cíl: X=180, Y=50, Základna = 0° (vpřed)
-    //     delay(10000);
+        fMoveManipulator(0, 180, 65, 0);        // 2. Dojeď pro předmět před sebe                       | Cíl: X=180, Y=50, Základna = 0° (vpřed)
+        delay(10000);
         
-    //     fMoveGrabber(0, iClose_Grabber_RA);     // 3. Zavři chapadlo (chytni předmět)
-    //     delay(1500);    
+        fMoveGrabber(0, iClose_Grabber_RA);     // 3. Zavři chapadlo (chytni předmět)
+        delay(1500);    
         
-    //     fMoveManipulator(0, 180, 150, -45);     // 4. Zvedni ho do výšky a otoč se s ním doprava        | Cíl: X=180, Y=50, Základna = -90° (vpravo)
-    //     delay(10000);
+        fMoveManipulator(0, 180, 150, 0);     // 4. Zvedni ho do výšky a otoč se s ním doprava        | Cíl: X=180, Y=50, Základna = -90° (vpravo)
+        delay(10000);
         
-    //     fMoveGrabber(0, iOpen_Grabber_RA);      // 5. Otevři chapadlo (pusť předmět)
-    //     delay(1500);
+        fMoveGrabber(0, iOpen_Grabber_RA);      // 5. Otevři chapadlo (pusť předmět)
+        delay(1500);
 
-    //     printf("\n");
+        printf("\n");
         
-    // }
+    }
 
     // Ruční nastavování pozice Manipulátoru
     // if (rkButtonIsPressed(BTN_UP))      { rkSmartServoMove(1, rkSmartServosPosicion(1) + 5); }
@@ -323,6 +324,12 @@ void loop() {
         
         int dist = -1;
         dist = rk_laser_measure("laser"); // Měření vzdálenosti z laseru
+        
+        // Korekce nepřesnosti laseru (ukazoval 200 mm při reálných 155 mm)
+        if (dist > 0) {
+            dist -= 45;
+            if (dist < 0) dist = 0; // Ochrana proti záporným hodnotám při těsném přiblížení
+        }
         
         float r, g, b;
         bool color_ok = rkColorSensorGetRGB("color", &r, &g, &b); // Přečtení barev

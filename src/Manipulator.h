@@ -71,8 +71,8 @@ inline void fMoveManipulator(int iManipulator_ID, int iTarget_Tip_Absolute_X, in
     int iL2 = 145;                  
     
     // POSUNUTÍ RAMENE
-    int iShoulder_Offset_X = -20;   
-    int iShoulder_Offset_Y = 90;    
+    int iShoulder_Offset_X = -65; //      65mm Realný
+    int iShoulder_Offset_Y = 135; //      163mm Realný
 
     // PUSUNUTÍ NÁDSTAVCE
     int iTool_Offset_X = 0;
@@ -84,7 +84,7 @@ inline void fMoveManipulator(int iManipulator_ID, int iTarget_Tip_Absolute_X, in
         
         // MANIPULÁTOR 1
         iTool_Offset_X = 37;        
-        iTool_Offset_Y = -54;       // -41 - 13
+        iTool_Offset_Y = -47;       // -41 - 13 //-54
         iServo0_Base = 135 + iBase_Angle; // Normální otáčení
        
     } else if (iManipulator_ID == 1) {
