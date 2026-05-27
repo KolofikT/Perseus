@@ -50,6 +50,8 @@ float rCurrentRobotX = 1400.0f;
 float rCurrentRobotY = 200.0f;  
 
 void setup() {
+
+    //rkLedYellow(true);
     
     // -- Start SerialMonitoru
     Serial.begin(115200);
@@ -58,7 +60,7 @@ void setup() {
     // -- Konfugurace robotky
     rkConfig cfg;
     
-    cfg.pocet_chytrych_serv = 4;
+    cfg.pocet_chytrych_serv = 7;
     delay(500);
     
     rkSetup(cfg);
@@ -97,9 +99,9 @@ void setup() {
     rkSmartServoInit(3, 0, 120);
     
     // // Manipulator ID 1:
-    // rkSmartServoInit(4, 45, 225, 500, 3); 
-    // rkSmartServoInit(5, 140, 235);
-    // rkSmartServoInit(6, 0, 90);
+    // rkSmartServoInit(4, 0, 240, 500, 3); 
+    // rkSmartServoInit(5, 0, 240);
+    // rkSmartServoInit(6, 0, 240);
     
     printf("CHYTRA SERVA INIT COMPLETE\n");
 
@@ -286,31 +288,33 @@ void loop() {
 // ======= TESTOVACÍ ČÁSTI ==========
 
 
-    if (rkButtonIsPressed(BTN_LEFT))      { fMoveGrabber(0, iOpen_Grabber_RA); }
+    if (rkButtonIsPressed(BTN_LEFT))      { rkSmartServoMove(6, 60); }
     if (rkButtonIsPressed(BTN_RIGHT))     { fMoveGrabber(0, iClose_Grabber_RA); }
-    if (rkButtonIsPressed(BTN_UP))        { fMoveManipulator(0, 180, 150, 0); }
-    if (rkButtonIsPressed(BTN_OFF))     { 
+    if (rkButtonIsPressed(BTN_UP))        {  }
+    if (rkButtonIsPressed(BTN_DOWN))      {  }
+    if (rkButtonIsPressed(BTN_ON))        {  }
+    // if (rkButtonIsPressed(BTN_OFF))     { 
         
-        // SCÉNÁŘ PRO MANIPULÁTOR 1 (ID 0)
+    //     // SCÉNÁŘ PRO MANIPULÁTOR 1 (ID 0)
         
-        fMoveGrabber(0, iOpen_Grabber_RA);      // 1. Otevři chapadlo
-        delay(1500);
+    //     fMoveGrabber(0, iOpen_Grabber_RA);      // 1. Otevři chapadlo
+    //     delay(1500);
         
-        fMoveManipulator(0, 180, 65, 0);        // 2. Dojeď pro předmět před sebe                       | Cíl: X=180, Y=50, Základna = 0° (vpřed)
-        delay(10000);
+    //     fMoveManipulator(0, 180, 65, 0);        // 2. Dojeď pro předmět před sebe                       | Cíl: X=180, Y=50, Základna = 0° (vpřed)
+    //     delay(10000);
         
-        fMoveGrabber(0, iClose_Grabber_RA);     // 3. Zavři chapadlo (chytni předmět)
-        delay(1500);    
+    //     fMoveGrabber(0, iClose_Grabber_RA);     // 3. Zavři chapadlo (chytni předmět)
+    //     delay(1500);    
         
-        fMoveManipulator(0, 180, 150, 0);     // 4. Zvedni ho do výšky a otoč se s ním doprava        | Cíl: X=180, Y=50, Základna = -90° (vpravo)
-        delay(10000);
+    //     fMoveManipulator(0, 180, 150, 0);     // 4. Zvedni ho do výšky a otoč se s ním doprava        | Cíl: X=180, Y=50, Základna = -90° (vpravo)
+    //     delay(10000);
         
-        fMoveGrabber(0, iOpen_Grabber_RA);      // 5. Otevři chapadlo (pusť předmět)
-        delay(1500);
+    //     fMoveGrabber(0, iOpen_Grabber_RA);      // 5. Otevři chapadlo (pusť předmět)
+    //     delay(1500);
 
-        printf("\n");
+    //     printf("\n");
         
-    }
+    // }
 
     // Ruční nastavování pozice Manipulátoru
     // if (rkButtonIsPressed(BTN_UP))      { rkSmartServoMove(1, rkSmartServosPosicion(1) + 5); }

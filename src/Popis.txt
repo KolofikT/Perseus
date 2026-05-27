@@ -21,5 +21,20 @@ ToyCleanUp:
     TOYCLEANUP MENU 1: START (ON)
 
 
+TO DO:
 
-pak přejede na hodnotu v absolutbních souřadnicích (přečte si kde je a dojede zbytek s tím že bude detekovat jestli před ním není překážka stejně jako u baterek a docků) až dojede na pozici tak otočí manipulátorem 0 do leva (pokud je modrý tým) a do prava (pokud je červený tým), poté pohne manipulátorem nahoru a dopředu a poté pustí kostku pomocí movegrabbber na iOpen_Grabber_RA
+    27.5.2026:  Znovu otestovat 3 Lasery na 1 I2C sběrnici (--> Zadní lasery + xShut pro GrabberLaser) 
+                Zadní Ultrazvuky
+                => Funkce na měření vzad: 
+                    => 5 měření 
+                        -> Median 
+                            => Kontrola Laser + Ultrazvuk
+                                => Průměr -> uložení vzdálenosti
+                                    !=> Nové měření (max 3x)
+                                        !=> BackButton (je-li třeba)
+                
+                Manipulator 1: Postavení, nulové body, testy
+                => Vyvážení robota + "třecí plošky"
+                    => Moovement lazení
+
+
