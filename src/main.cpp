@@ -329,10 +329,10 @@ void loop() {
 
     // if (rkButtonIsPressed(BTN_LEFT))      { rkSmartServoMove(6, 60); }
     // if (rkButtonIsPressed(BTN_RIGHT))     { fMoveGrabber(0, iClose_Grabber_RA); }
-    if (rkButtonIsPressed(BTN_UP))        {  }
-    if (rkButtonIsPressed(BTN_DOWN))      {  }
-    if (rkButtonIsPressed(BTN_ON))        { move_acc_avoid(2000.0f, 100.0f, []() { return false; }); delay(5000); move_acc_avoid(-2000.0f, 100.0f, []() { return false; });}
-    if (rkButtonIsPressed(BTN_OFF))        { move_acc_avoid(-2000.0f, 100.0f, []() { return false; }); }
+    // if (rkButtonIsPressed(BTN_UP))        {  }
+    // if (rkButtonIsPressed(BTN_DOWN))      {  }
+    // if (rkButtonIsPressed(BTN_ON))        { move_acc_avoid(2000.0f, 100.0f, []() { return false; }); delay(5000); move_acc_avoid(-2000.0f, 100.0f, []() { return false; });}
+    // if (rkButtonIsPressed(BTN_OFF))        { move_acc_avoid(-2000.0f, 100.0f, []() { return false; }); }
     // if (rkButtonIsPressed(BTN_OFF))     { 
         
     //     // SCÉNÁŘ PRO MANIPULÁTOR 1 (ID 0)
@@ -356,11 +356,61 @@ void loop() {
         
     // }
 
-    // Ruční nastavování pozice Manipulátoru
-    // if (rkButtonIsPressed(BTN_UP))      { rkSmartServoMove(1, rkSmartServosPosicion(1) + 5); }
-    // if (rkButtonIsPressed(BTN_DOWN))    { rkSmartServoMove(1, rkSmartServosPosicion(1) - 5 ); } 
-    // if (rkButtonIsPressed(BTN_LEFT))    { rkSmartServoMove(2, rkSmartServosPosicion(2) + 5); }
-    // if (rkButtonIsPressed(BTN_RIGHT))   { rkSmartServoMove(2, rkSmartServosPosicion(2) - 5);}
+    // // Ruční nastavování pozice Manipulátoru ID 0
+    // if (rkButtonIsPressed(BTN_UP))      { rkSmartServoMove(0, rkSmartServosPosicion(0) + 5); }
+    // if (rkButtonIsPressed(BTN_DOWN))    { rkSmartServoMove(0, rkSmartServosPosicion(0) - 5 ); } 
+    // if (rkButtonIsPressed(BTN_LEFT))    { rkSmartServoMove(1, rkSmartServosPosicion(1) + 5); }
+    // if (rkButtonIsPressed(BTN_RIGHT))   { rkSmartServoMove(1, rkSmartServosPosicion(1) - 5);}
+    // if (rkButtonIsPressed(BTN_ON))      { rkSmartServoMove(2, rkSmartServosPosicion(2) + 5); }
+    // if (rkButtonIsPressed(BTN_OFF))     { rkSmartServoMove(2, rkSmartServosPosicion(2) - 5); }
+
+    // Ruční nastavování pozice Manipulátoru ID 1
+    if (rkButtonIsPressed(BTN_UP))      { rkSmartServoMove(4, 0); }
+    if (rkButtonIsPressed(BTN_DOWN))    { rkSmartServoMove(4, 240); } 
+    if (rkButtonIsPressed(BTN_LEFT))    { rkSmartServoMove(5, rkSmartServosPosicion(5) + 5); }
+    if (rkButtonIsPressed(BTN_RIGHT))   { rkSmartServoMove(5, rkSmartServosPosicion(5) - 5);}
+    if (rkButtonIsPressed(BTN_ON))      { rkSmartServoMove(6, rkSmartServosPosicion(6) + 5); }
+    if (rkButtonIsPressed(BTN_OFF))     { rkSmartServoMove(6, rkSmartServosPosicion(6) - 5); }
+
+
+    // // --- POZICE PRO MANIPULATOR ID 0 ---
+
+    // // Nejblíž s Toolem:
+    // if (rkButtonIsPressed(BTN_UP))      { rkSmartServoMove(1, 180); rkSmartServoMove(2, 85); }
+
+    // // Nejdál s Toolem: 
+    // if (rkButtonIsPressed(BTN_DOWN))    { rkSmartServoMove(1, 140); rkSmartServoMove(2, 30); } 
+
+    // // Nejblíž s RA Kostkou:
+    // if (rkButtonIsPressed(BTN_LEFT))    { rkSmartServoMove(1, 200); rkSmartServoMove(2, 85); }
+
+    // // Nejdál s RA Kostkou:
+    // if (rkButtonIsPressed(BTN_RIGHT))   { rkSmartServoMove(1, 155); rkSmartServoMove(2, 20); }
+
+    // // Nejblíž s TC Kostkou: 
+    // if (rkButtonIsPressed(BTN_ON))      { rkSmartServoMove(1, 185); rkSmartServoMove(2, 85); }
+
+    // // Nejdál s TC Kostkou: --
+    // if (rkButtonIsPressed(BTN_OFF))     { rkSmartServoMove(1, 145); rkSmartServoMove(2, 20); }
+
+
+
+    // // --- POZICE PRO MANIPULATOR ID 1 ---
+
+    // // Nejblíž s Toolem:
+    // if (rkButtonIsPressed(BTN_UP))      { rkSmartServoMove(1, 180); rkSmartServoMove(2, 85); }
+
+    // // Nejdál s Toolem: 
+    // if (rkButtonIsPressed(BTN_DOWN))    { rkSmartServoMove(1, 140); rkSmartServoMove(2, 30); } 
+
+    // // Nejblíž s RA Baterkou:
+    // if (rkButtonIsPressed(BTN_LEFT))    { rkSmartServoMove(1, 200); rkSmartServoMove(2, 85); }
+
+    // // Nejdál s RA Baterkou:
+    // if (rkButtonIsPressed(BTN_RIGHT))   { rkSmartServoMove(1, 155); rkSmartServoMove(2, 20); }
+
+
+
 
     // // Ne-blokující výpis hodnot senzorů každých 500 ms (aby se nesekal zbytek robota)
     // if (millis() - lastSensorPrint > 500) {

@@ -38,3 +38,77 @@ TO DO:
                     => Moovement lazení
 
 
+Manipulátory:
+
+==================================================================
+
+ -- 1. Manipulator
+
+Smart servo ID 0 (Otaceni zakladny)           - min  (right) -    45°   mid (front) - 135°    max (left)  -   225°      rozsah: 180°
+Smart servo ID 1 (Pohyb 1. ramene)            - min  (down)  -    140°                        max (up)    -   235°      rozsah: 95°
+Smart servo ID 2 (Pohyb 2. ramene)            - min  (down)  -    0°                          max (up)    -   85°       rozsah: 85°
+Smart servo ID 3 (Chytání grabberem - Linear) - min  (close) -    0°                          max (open)  -   120°      rozsah: 120°
+
+------------------------------------------------------------------
+
+--- Bez Robota
+
+-- Cube tool
+Nejblíž s Toolem:        1. Rameno - 225°    | 2. Rameno - 60°
+Nejdál s Toolem:         1. Rameno - 160°    | 2. Rameno - 10°
+
+-- RA Kostka
+Nejblíž s RA Kostkou:    1. Rameno - 235°    | 2. Rameno - 34°
+Nejdál s RA Kostkou:     1. Rameno - 170°    | 2. Rameno - 0°
+
+-- TC Kostka
+Nejblíž s TC Kostkou:    1. Rameno - 225°    | 2. Rameno - 50°
+Nejdál s TC Kostkou:     1. Rameno - 150°    | 2. Rameno - 0°
+
+-- HomePos:              1. Rameno - 255°    | 2. Rameno - 60°
+
+------------------------------------------------------------------
+
+--- S Robotem
+
+-- Cube tool
+Nejblíž s Toolem:        1. Rameno - 180°    | 2. Rameno - 85°
+Nejdál s Toolem:         1. Rameno - 140°    | 2. Rameno - 30°
+
+-- RA Kostka
+Nejblíž s RA Kostkou:    1. Rameno - 200°    | 2. Rameno - 85°
+Nejdál s RA Kostkou:     1. Rameno - 155°    | 2. Rameno - 20°
+
+-- TC Kostka
+Nejblíž s TC Kostkou:    1. Rameno - 185°    | 2. Rameno - 85°
+Nejdál s TC Kostkou:     1. Rameno - 145°    | 2. Rameno - 20°
+
+-- HomePos:              1. Rameno - 210°    | 2. Rameno - 90°
+
+==================================================================
+
+ -- 2. Manipulator
+
+Smart servo ID 4 (Otaceni zakladny)           - min  (left) -    50°   mid (front) - 160°     max (right) -   240°    --rozsah: -°
+Smart servo ID 5 (Pohyb 1. ramene)            - min  (down)  -  145°                          max (up)    -   240°      rozsah: 95°
+Smart servo ID 6 (Pohyb 2. ramene)            - min  (up)  -      0°                          max (up)    -   130°      rozsah: 130°
+Stupid servo ID 1 (Chytání grabberem - Mag.)  - min  (close) -    -°                          max (open)  -   -°      rozsah: -°
+
+------------------------------------------------------------------
+
+-- Battery tool
+Nejblíž s Toolem:        1. Rameno - 155°    | 2. Rameno - 125°
+Nejdál s Toolem:         1. Rameno - 160°    | 2. Rameno - 10°
+
+-- RA Baterka
+Nejblíž s RA Baterkou:   1. Rameno - 215°    | 2. Rameno - 105°
+Nejdál s RA Baterkou:    1. Rameno - 145°    | 2. Rameno - -30°
+
+-- HomePos:              1. Rameno - 210°    | 2. Rameno - 105°
+
+==================================================================
+
+
+
+
+
