@@ -13,9 +13,10 @@ struct MoveResult {
 /**
  * \brief Plynulý pohyb s vyhýbáním se (robot nenarazí).
  * 
- * Používá sinusovou (S-curve) rampu pro ultra-plynulý rozjezd a zpomalení,
- * PI-regulátor pro udržení směru a statický bias pro kompenzaci 
- * asymetrického tření (pravá strana drží víc).
+ * Používá kubickou rampu (progress³) pro ultra-plynulý rozjezd — z nuly robot
+ * sotva šourá a rychlost narůstá exponenciálně. Doba rozjezdu i brzdění
+ * závisí na cílové rychlosti (vyšší speed = delší/plynulejší rampa).
+ * PI-regulátor pro udržení směru, statický bias pro kompenzaci tření pravé strany.
  * 
  * \param mm Vzdálenost v milimetrech (kladná pro jízdu vpřed, záporná pro vzad).
  * \param speed Rychlost v % (0-100).
@@ -40,16 +41,22 @@ inline MoveResult move_acc_avoid(float mm, float speed, std::function<bool()> is
     delay(50); // Krátká pauza, aby se koprocesor stihl zresetovat
     
     // ============================================================
-    // PARAMETRY RAMPY (S-křivka)
+    // PARAMETRY RAMPY — KUBICKÁ KŘIVKA (progress³)
     // ============================================================
-    float min_speed = 12.0f;         // Nižší startovací rychlost pro plynulost (bylo 25)
+    // Kubická křivka: 0.1³=0.001, 0.2³=0.008, 0.3³=0.027, 0.5³=0.125, 0.8³=0.512
+    // → První třetina rozjezdu je téměř nehybná, pak to strmě roste
+    
+    float min_speed = 6.0f;  // Velmi nízká startovací rychlost — robot sotva šourá (bylo 12, pak 25)
     if (abs_target_speed < min_speed) { abs_target_speed = min_speed; }
     
-    // Časy pro S-křivku (v ms)
-    float accel_duration_ms = 600.0f;  // Doba rozjezdu (bylo ~300ms, teď 600ms pro hladkost)
+    // Doba rozjezdu ZÁVISÍ NA RYCHLOSTI — vyšší speed = delší rampa
+    // speed 100% → 1500ms, speed 50% → 900ms, speed 30% → 660ms
+    float accel_duration_ms = 300.0f + 12.0f * abs_target_speed;
     
-    // Vzdálenost pro brzdění — dynamicky, ale max polovina dráhy
-    float decel_distance_mm = std::min(target_mm * 0.4f, 1.2f * abs_target_speed);
+    // Brzdná vzdálenost ZÁVISÍ NA RYCHLOSTI — vyšší speed = dřívější brzdění
+    // speed 100% → min(50%, 200mm), speed 50% → min(50%, 100mm)
+    // Zvýšeno oproti předchozímu (bylo 0.4/1.2) aby robot nepřejížděl cíl
+    float decel_distance_mm = std::min(target_mm * 0.5f, 2.0f * abs_target_speed);
     
     // Rychlý stop před překážkou
     float avoid_decel_step = abs_target_speed / 5.0f;
@@ -79,10 +86,10 @@ inline MoveResult move_acc_avoid(float mm, float speed, std::function<bool()> is
     bool waiting_for_obstacle = false;
     bool accel_phase = true;  // Jsme ve fázi rozjezdu?
     
-    // Výpočet hrubého timeoutu pro celou cestu
+    // Výpočet hrubého timeoutu pro celou cestu (s extra rezervou pro pomalý rozjezd)
     float speed_mm_per_sec = abs_target_speed * 5.0f; // odhad 100% speed ~ 500 mm/s
     float expected_time_ms = (target_mm / speed_mm_per_sec) * 1000.0f;
-    uint32_t general_timeout_ms = (uint32_t)(expected_time_ms * 2.5f + 4000.0f);
+    uint32_t general_timeout_ms = (uint32_t)(expected_time_ms * 3.0f + 5000.0f);
     
     // Pomocná funkce pro bezpečné ořezání hodnoty a převod do int8_t
     auto clamp_speed = [](float s) -> int8_t {
@@ -140,7 +147,7 @@ inline MoveResult move_acc_avoid(float mm, float speed, std::function<bool()> is
                 // Překážka právě zmizela, pokračujeme v jízdě
                 waiting_for_obstacle = false;
                 start_time += (millis() - avoid_wait_start); // Posuneme celkový timeout
-                accel_start_time = millis(); // Restart S-křivky od začátku
+                accel_start_time = millis(); // Restart kubické křivky od začátku
                 accel_phase = true;
                 current_base_speed = 0.0f;
                 integral = 0.0f;
@@ -150,24 +157,39 @@ inline MoveResult move_acc_avoid(float mm, float speed, std::function<bool()> is
             
             if (dist_remaining <= decel_distance_mm) {
                 // ========================================
-                // FÁZE ZPOMALENÍ — S-křivka (sinusová)
+                // FÁZE ZPOMALENÍ — inverzní kubická křivka
                 // ========================================
+                // Brzdění je zrcadlové k rozjezdu: nejdřív rychle ubírá,
+                // pak u cíle pomalu dojíždí (jako kubická z 1→0)
                 accel_phase = false;
                 
-                // Normalizovaný progress brzdění (0.0 = začátek brzdění, 1.0 = cíl)
+                // progress: 0.0 = začátek brzdění, 1.0 = cíl
                 float decel_progress = 1.0f - (dist_remaining / decel_distance_mm);
                 decel_progress = std::max(0.0f, std::min(decel_progress, 1.0f));
                 
-                // S-křivka: sin() dává plynulý přechod
-                float decel_factor = 0.5f * (1.0f + cosf(decel_progress * M_PI)); // 1.0 → 0.0 plynule
+                // Inverzní kubická: (1 - progress)³
+                // Při progress=0: factor=1 (plná rychlost)
+                // Při progress=0.5: factor=0.125 (už hodně pomalý)
+                // Při progress=1.0: factor=0 (zastaveno)
+                float inv = 1.0f - decel_progress;
+                float decel_factor = inv * inv * inv; // kubická: plynulé dojíždění k cíli
                 
                 current_base_speed = min_speed + (abs_target_speed - min_speed) * decel_factor;
                 if (current_base_speed < min_speed) current_base_speed = min_speed;
                 
             } else if (accel_phase) {
                 // ========================================
-                // FÁZE ZRYCHLENÍ — S-křivka (sinusová)
+                // FÁZE ZRYCHLENÍ — KUBICKÁ KŘIVKA (progress³)
                 // ========================================
+                // Kubická křivka dává EXTRA POMALÝ start z nuly:
+                //   t=10%:  0.1³ = 0.001 → téměř nula
+                //   t=20%:  0.2³ = 0.008 → pořád skoro nic
+                //   t=30%:  0.3³ = 0.027 → sotva se hýbe
+                //   t=50%:  0.5³ = 0.125 → teprve začíná být vidět
+                //   t=70%:  0.7³ = 0.343 → teď to začíná stoupat
+                //   t=90%:  0.9³ = 0.729 → strmý nárůst
+                //   t=100%: 1.0³ = 1.000 → plná rychlost
+                
                 float elapsed_ms = (float)(millis() - accel_start_time);
                 
                 if (elapsed_ms >= accel_duration_ms) {
@@ -175,10 +197,8 @@ inline MoveResult move_acc_avoid(float mm, float speed, std::function<bool()> is
                     current_base_speed = abs_target_speed;
                     accel_phase = false;
                 } else {
-                    // S-křivka: sin() místo lineárního kroku
-                    // progress 0→1, sin(0→π/2) = 0→1, ale S-tvar dává:
-                    float accel_progress = elapsed_ms / accel_duration_ms;
-                    float accel_factor = 0.5f * (1.0f - cosf(accel_progress * M_PI)); // 0.0 → 1.0 plynule (S-tvar)
+                    float accel_progress = elapsed_ms / accel_duration_ms; // 0.0 → 1.0
+                    float accel_factor = accel_progress * accel_progress * accel_progress; // KUBICKÁ: progress³
                     
                     current_base_speed = min_speed + (abs_target_speed - min_speed) * accel_factor;
                 }
