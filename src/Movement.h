@@ -41,12 +41,12 @@ inline MoveResult move_acc_avoid(float mm, float speed, std::function<bool()> is
     delay(50); // Krátká pauza, aby se koprocesor stihl zresetovat
     
     // ============================================================
-    // PARAMETRY RAMPY — MOCNINOVÁ KŘIVKA (progress^2.5)
+    // PARAMETRY RAMPY — KVADRATICKÁ KŘIVKA (progress²)
     // ============================================================
-    // Mocnina 2.5: 0.1^2.5=0.003, 0.2^2.5=0.018, 0.3^2.5=0.049, 0.5^2.5=0.177, 0.8^2.5=0.572
-    // → Pomalý start, ale ne tak extrémní jako kubická (³). Plynulý přechod.
+    // Kvadratická křivka: 0.1²=0.01, 0.2²=0.04, 0.3²=0.09, 0.5²=0.25, 0.8²=0.64
+    // → Rozumně pomalý start od nuly, stabilnější a méně prudký nárůst než 2.5.
     
-    float min_speed = 10.0f;  // Rozumná startovací rychlost — dost na to, aby P-regulátor neosciloval (bylo 6)
+    float min_speed = 10.0f;  // Stabilní startovací rychlost (dostatečná pro stabilizaci regulátoru)
     if (abs_target_speed < min_speed) { abs_target_speed = min_speed; }
     
     // Doba rozjezdu ZÁVISÍ NA RYCHLOSTI — vyšší speed = delší rampa
@@ -167,27 +167,28 @@ inline MoveResult move_acc_avoid(float mm, float speed, std::function<bool()> is
                 float decel_progress = 1.0f - (dist_remaining / decel_distance_mm);
                 decel_progress = std::max(0.0f, std::min(decel_progress, 1.0f));
                 
-                // Inverzní mocninová (1 - progress)^2.5
+                // Inverzní kvadratická (1 - progress)²
                 // Při progress=0: factor=1 (plná rychlost)
-                // Při progress=0.5: factor=0.177 (už dost pomalý)
+                // Při progress=0.5: factor=0.25 (pomalý)
                 // Při progress=1.0: factor=0 (zastaveno)
                 float inv = 1.0f - decel_progress;
-                float decel_factor = powf(inv, 2.5f); // mocnina 2.5: plynulé dojíždění k cíli
+                float decel_factor = inv * inv; // kvadratická: plynulé dojíždění k cíli
                 
-                current_base_speed = min_speed + (abs_target_speed - min_speed) * decel_factor;
-                if (current_base_speed < min_speed) current_base_speed = min_speed;
+                // Zpomalujeme z cílové rychlosti až k minimu (4% pro hladký dojezd), nekončíme na min_speed!
+                current_base_speed = abs_target_speed * decel_factor;
+                if (current_base_speed < 4.0f) current_base_speed = 4.0f;
                 
             } else if (accel_phase) {
                 // ========================================
-                // FÁZE ZRYCHLENÍ — MOCNINOVÁ KŘIVKA (progress^2.5)
+                // FÁZE ZRYCHLENÍ — KVADRATICKÁ KŘIVKA (progress²)
                 // ========================================
-                // Mocnina 2.5 dává plynulý start, ale ne tak extrémní jako kubická:
-                //   t=10%:  0.003 → velmi pomalu
-                //   t=20%:  0.018 → stále pomalu
-                //   t=30%:  0.049 → začíná být vidět
-                //   t=50%:  0.177 → rozjíždí se
-                //   t=70%:  0.410 → solidní rychlost
-                //   t=90%:  0.768 → skoro plná
+                // Kvadratická křivka dává optimální, plynulý start bez 'kvedlání' od PI:
+                //   t=10%:  0.010 → jemný start
+                //   t=20%:  0.040 → stabilní rozjezd
+                //   t=30%:  0.090 → zrychluje
+                //   t=50%:  0.250 → polovina výkonu
+                //   t=70%:  0.490 → stabilní jízda
+                //   t=90%:  0.810 → skoro plná
                 //   t=100%: 1.000 → plná rychlost
                 
                 float elapsed_ms = (float)(millis() - accel_start_time);
@@ -198,7 +199,7 @@ inline MoveResult move_acc_avoid(float mm, float speed, std::function<bool()> is
                     accel_phase = false;
                 } else {
                     float accel_progress = elapsed_ms / accel_duration_ms; // 0.0 → 1.0
-                    float accel_factor = powf(accel_progress, 2.5f); // MOCNINA 2.5: plynulejší než kubická
+                    float accel_factor = accel_progress * accel_progress; // KVADRATICKÁ: progress²
                     
                     current_base_speed = min_speed + (abs_target_speed - min_speed) * accel_factor;
                 }

@@ -332,6 +332,7 @@ void loop() {
     if (rkButtonIsPressed(BTN_UP))        {  }
     if (rkButtonIsPressed(BTN_DOWN))      {  }
     if (rkButtonIsPressed(BTN_ON))        { move_acc_avoid(1000.0f, 100.0f, []() { return false; }); }
+    if (rkButtonIsPressed(BTN_OFF))        { move_acc_avoid(-1000.0f, 100.0f, []() { return false; }); }
     // if (rkButtonIsPressed(BTN_OFF))     { 
         
     //     // SCÉNÁŘ PRO MANIPULÁTOR 1 (ID 0)
