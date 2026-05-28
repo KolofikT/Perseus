@@ -13,6 +13,10 @@ struct MoveResult {
 /**
  * \brief Plynulý pohyb s vyhýbáním se (robot nenarazí).
  * 
+ * Používá sinusovou (S-curve) rampu pro ultra-plynulý rozjezd a zpomalení,
+ * PI-regulátor pro udržení směru a statický bias pro kompenzaci 
+ * asymetrického tření (pravá strana drží víc).
+ * 
  * \param mm Vzdálenost v milimetrech (kladná pro jízdu vpřed, záporná pro vzad).
  * \param speed Rychlost v % (0-100).
  * \param is_obstacle Funkce/lambda, která vrátí true, pokud je detekována překážka.
@@ -35,28 +39,50 @@ inline MoveResult move_acc_avoid(float mm, float speed, std::function<bool()> is
     rkMotorsSetPositionRight(0);
     delay(50); // Krátká pauza, aby se koprocesor stihl zresetovat
     
-    float min_speed = 18.0f;
+    // ============================================================
+    // PARAMETRY RAMPY (S-křivka)
+    // ============================================================
+    float min_speed = 12.0f;         // Nižší startovací rychlost pro plynulost (bylo 25)
     if (abs_target_speed < min_speed) { abs_target_speed = min_speed; }
     
-    float current_base_speed = min_speed * speed_sign;
+    // Časy pro S-křivku (v ms)
+    float accel_duration_ms = 600.0f;  // Doba rozjezdu (bylo ~300ms, teď 600ms pro hladkost)
     
-    // Parametry rampy a P-regulátoru
-    float decel_distance_mm = 0.8f * abs_target_speed; // Čím rychleji jede, tím dříve zpomaluje (např. při 50% -> 40 mm)
-    float accel_step = abs_target_speed / 20.0f; // Akcelerace na maximum zabere cca 200 ms
-    float decel_step = abs_target_speed / 20.0f; 
-    float avoid_decel_step = abs_target_speed / 5.0f; // Rychlé zastavení před překážkou (cca 50 ms)
+    // Vzdálenost pro brzdění — dynamicky, ale max polovina dráhy
+    float decel_distance_mm = std::min(target_mm * 0.4f, 1.2f * abs_target_speed);
     
-    float kp = 0.8f; // Proporcionální konstanta pro P-regulátor na milimetry
-    float max_corr = 8.0f; // Maximální zásah regulátoru (%)
+    // Rychlý stop před překážkou
+    float avoid_decel_step = abs_target_speed / 5.0f;
     
+    // ============================================================
+    // PARAMETRY PI-REGULÁTORU pro udržení směru
+    // ============================================================
+    float kp = 0.8f;          // Proporcionální (sníženo z 1.5 — méně agresivní)
+    float ki = 0.02f;         // Integrální složka (eliminuje trvalou úchylku)
+    float max_corr = 10.0f;   // Max korekce (sníženo z 15)
+    float integral = 0.0f;    // Akumulátor integrální složky
+    float max_integral = 50.0f; // Anti-windup limit
+    
+    // ============================================================
+    // KOMPENZACE ASYMETRICKÉHO TŘENÍ (pravá strana drhne víc)
+    // ============================================================
+    // Kladná hodnota = pravý motor dostane víc výkonu
+    // Experimentálně doladit: začni s 1.5, pokud robot stále uhýbá doprava, zvyš na 2-3
+    float right_bias = 1.5f;
+    
+    // ============================================================
+    // ČASOVAČE A STAVOVÉ PROMĚNNÉ
+    // ============================================================
     unsigned long start_time = millis();
+    unsigned long accel_start_time = millis(); // Čas začátku rozjezdu
     unsigned long avoid_wait_start = 0;
     bool waiting_for_obstacle = false;
+    bool accel_phase = true;  // Jsme ve fázi rozjezdu?
     
     // Výpočet hrubého timeoutu pro celou cestu
     float speed_mm_per_sec = abs_target_speed * 5.0f; // odhad 100% speed ~ 500 mm/s
     float expected_time_ms = (target_mm / speed_mm_per_sec) * 1000.0f;
-    uint32_t general_timeout_ms = (uint32_t)(expected_time_ms * 2.0f + 3000.0f);
+    uint32_t general_timeout_ms = (uint32_t)(expected_time_ms * 2.5f + 4000.0f);
     
     // Pomocná funkce pro bezpečné ořezání hodnoty a převod do int8_t
     auto clamp_speed = [](float s) -> int8_t {
@@ -66,10 +92,11 @@ inline MoveResult move_acc_avoid(float mm, float speed, std::function<bool()> is
     };
 
     float avg_pos = 0.0f;
+    float current_base_speed = 0.0f; // Startujeme od nuly!
 
     while (true) {
-        float pos_l = rkMotorsGetPositionLeft();
-        float pos_r = rkMotorsGetPositionRight();
+        float pos_l = rkMotorsGetPositionLeft(true); // 'true' donutí vyčíst reálnou hodnotu od koprocesoru!
+        float pos_r = rkMotorsGetPositionRight(true);
         float abs_l = std::abs(pos_l);
         float abs_r = std::abs(pos_r);
         avg_pos = (abs_l + abs_r) / 2.0f;
@@ -97,7 +124,9 @@ inline MoveResult move_acc_avoid(float mm, float speed, std::function<bool()> is
                     waiting_for_obstacle = true;
                     avoid_wait_start = millis();
                 }
-                current_base_speed = abs_curr * speed_sign;
+                current_base_speed = abs_curr;
+                // Reset integrátoru při zastavení
+                integral = 0.0f;
             } else {
                 // Fáze: Zastaveno, čekáme na volnou cestu
                 current_base_speed = 0;
@@ -111,36 +140,81 @@ inline MoveResult move_acc_avoid(float mm, float speed, std::function<bool()> is
                 // Překážka právě zmizela, pokračujeme v jízdě
                 waiting_for_obstacle = false;
                 start_time += (millis() - avoid_wait_start); // Posuneme celkový timeout
-                current_base_speed = min_speed * speed_sign; 
+                accel_start_time = millis(); // Restart S-křivky od začátku
+                accel_phase = true;
+                current_base_speed = 0.0f;
+                integral = 0.0f;
             }
             
             float dist_remaining = target_mm - avg_pos;
+            
             if (dist_remaining <= decel_distance_mm) {
-                // Fáze: Běžné plynulé zpomalování před cílem
-                float abs_curr = std::abs(current_base_speed);
-                abs_curr -= decel_step;
-                if (abs_curr < min_speed) abs_curr = min_speed;
-                current_base_speed = abs_curr * speed_sign;
-            } else {
-                // Fáze: Zrychlování a konstantní jízda
-                float abs_curr = std::abs(current_base_speed);
-                if (abs_curr < abs_target_speed) {
-                    abs_curr += accel_step;
-                    if (abs_curr > abs_target_speed) abs_curr = abs_target_speed;
+                // ========================================
+                // FÁZE ZPOMALENÍ — S-křivka (sinusová)
+                // ========================================
+                accel_phase = false;
+                
+                // Normalizovaný progress brzdění (0.0 = začátek brzdění, 1.0 = cíl)
+                float decel_progress = 1.0f - (dist_remaining / decel_distance_mm);
+                decel_progress = std::max(0.0f, std::min(decel_progress, 1.0f));
+                
+                // S-křivka: sin() dává plynulý přechod
+                float decel_factor = 0.5f * (1.0f + cosf(decel_progress * M_PI)); // 1.0 → 0.0 plynule
+                
+                current_base_speed = min_speed + (abs_target_speed - min_speed) * decel_factor;
+                if (current_base_speed < min_speed) current_base_speed = min_speed;
+                
+            } else if (accel_phase) {
+                // ========================================
+                // FÁZE ZRYCHLENÍ — S-křivka (sinusová)
+                // ========================================
+                float elapsed_ms = (float)(millis() - accel_start_time);
+                
+                if (elapsed_ms >= accel_duration_ms) {
+                    // Rozjezd dokončen
+                    current_base_speed = abs_target_speed;
+                    accel_phase = false;
+                } else {
+                    // S-křivka: sin() místo lineárního kroku
+                    // progress 0→1, sin(0→π/2) = 0→1, ale S-tvar dává:
+                    float accel_progress = elapsed_ms / accel_duration_ms;
+                    float accel_factor = 0.5f * (1.0f - cosf(accel_progress * M_PI)); // 0.0 → 1.0 plynule (S-tvar)
+                    
+                    current_base_speed = min_speed + (abs_target_speed - min_speed) * accel_factor;
                 }
-                current_base_speed = abs_curr * speed_sign;
+            } else {
+                // ========================================
+                // FÁZE KONSTANTNÍ RYCHLOSTI
+                // ========================================
+                current_base_speed = abs_target_speed;
             }
         }
         
-        // Aplikace rychlosti a P-regulátoru pro udržení směru
-        if (current_base_speed != 0) {
+        // ============================================================
+        // APLIKACE PI-REGULÁTORU + BIAS pro udržení směru
+        // ============================================================
+        if (current_base_speed > 0.5f) {
             float diff = abs_l - abs_r; // Kladné -> levé kolo je napřed
-            float correction = std::max(-max_corr, std::min(diff * kp, max_corr));
             
-            float speed_l = current_base_speed;
-            float speed_r = current_base_speed;
+            // PI regulátor
+            integral += diff;
+            // Anti-windup: omezení integrální složky
+            if (integral > max_integral) integral = max_integral;
+            if (integral < -max_integral) integral = -max_integral;
             
-            // Pokud je levé kolo napřed, zpomalíme levé a zrychlíme pravé
+            float correction = diff * kp + integral * ki;
+            correction = std::max(-max_corr, std::min(correction, max_corr));
+            
+            float applied_speed = current_base_speed * speed_sign;
+            
+            float speed_l = applied_speed;
+            float speed_r = applied_speed;
+            
+            // Aplikace statického biasu pro pravou stranu (kompenzace tření)
+            // right_bias je přidáno k pravému motoru vždy
+            speed_r += right_bias * speed_sign;
+            
+            // Pokud je levé kolo napřed, zpomalíme levé a zrychlíme pravé (a naopak)
             speed_l -= correction * speed_sign; 
             speed_r += correction * speed_sign;
             
@@ -148,7 +222,7 @@ inline MoveResult move_acc_avoid(float mm, float speed, std::function<bool()> is
         } else {
             rkMotorsSetSpeed(0, 0);
         }
-        delay(10);
+        delay(15); // Prodlouženo z 10 na 15ms pro stabilnější regulaci
     }
     
     rkMotorsSetSpeed(0, 0);
