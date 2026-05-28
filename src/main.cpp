@@ -327,12 +327,12 @@ void loop() {
 // ======= TESTOVACÍ ČÁSTI ==========
 
 
-    if (rkButtonIsPressed(BTN_LEFT))      { rkSmartServoMove(6, 60); }
-    if (rkButtonIsPressed(BTN_RIGHT))     { fMoveGrabber(0, iClose_Grabber_RA); }
+    // if (rkButtonIsPressed(BTN_LEFT))      { rkSmartServoMove(6, 60); }
+    // if (rkButtonIsPressed(BTN_RIGHT))     { fMoveGrabber(0, iClose_Grabber_RA); }
     if (rkButtonIsPressed(BTN_UP))        {  }
     if (rkButtonIsPressed(BTN_DOWN))      {  }
-    if (rkButtonIsPressed(BTN_ON))        { move_acc_avoid(1000.0f, 100.0f, []() { return false; }); }
-    if (rkButtonIsPressed(BTN_OFF))        { move_acc_avoid(-1000.0f, 100.0f, []() { return false; }); }
+    if (rkButtonIsPressed(BTN_ON))        { move_acc_avoid(2000.0f, 100.0f, []() { return false; }); delay(5000); move_acc_avoid(-2000.0f, 100.0f, []() { return false; });}
+    if (rkButtonIsPressed(BTN_OFF))        { move_acc_avoid(-2000.0f, 100.0f, []() { return false; }); }
     // if (rkButtonIsPressed(BTN_OFF))     { 
         
     //     // SCÉNÁŘ PRO MANIPULÁTOR 1 (ID 0)
