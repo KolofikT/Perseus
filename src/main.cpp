@@ -63,7 +63,7 @@ void setup() {
     rkConfig cfg;
     
         // - Odometrie a geometrie robota
-    cfg.prevod_motoru = 1012.0f; // Korekce: 950 × (1065/1000) — robot přejížděl o 6.5%
+    cfg.prevod_motoru = 901.0f; // Korekce: 1012 × (1000/1123) — sníženo, robot přejížděl
         cfg.left_wheel_diameter = 68.0f; // Průměr levého kola v mm
         cfg.right_wheel_diameter = 68.0f; // Průměr pravého kola v mm
         cfg.roztec_kol = 265.0f; // Rozteč kol v mm
